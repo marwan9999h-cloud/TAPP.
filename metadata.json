@@ -1,0 +1,6 @@
+{
+  "name": "TAPP — Smart NFC Cards & Brand Pages",
+  "description": "كارت واحد. كل تفاصيل براندك في Tap واحدة — كروت NFC وQR ذكية وصفحات براندات مستقلة.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
