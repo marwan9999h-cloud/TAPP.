@@ -1,5 +1,9 @@
 import { useEffect } from 'react';
-import { getPublicBaseUrl, normalizePath } from '../utils/url';
+import {
+  getAbsoluteAssetUrl,
+  getCanonicalUrl,
+  normalizePath,
+} from '../utils/url';
 
 export interface DocumentMetaInput {
   title: string;
@@ -58,20 +62,11 @@ export function useDocumentMeta(meta: DocumentMetaInput | null): void {
   useEffect(() => {
     if (!meta || typeof document === 'undefined') return;
 
-    const baseUrl = getPublicBaseUrl();
     const cleanPath = normalizePath(meta.canonicalPath);
     const isNotFound = Boolean(meta.robots?.includes('noindex'));
 
-    const canonicalUrl =
-      !isNotFound && baseUrl
-        ? cleanPath === '/'
-          ? `${baseUrl}/`
-          : `${baseUrl}${cleanPath}`
-        : cleanPath;
-
-    const absoluteOgImage = baseUrl
-      ? `${baseUrl}${meta.ogImagePath}`
-      : meta.ogImagePath;
+    const canonicalUrl = !isNotFound ? getCanonicalUrl(cleanPath) : cleanPath;
+    const absoluteOgImage = getAbsoluteAssetUrl(meta.ogImagePath);
 
     document.documentElement.lang = meta.lang;
     document.documentElement.dir = meta.dir;

@@ -3,13 +3,14 @@ import type { BrandSlug } from '../config/brands';
 /**
  * Normalizes a route path:
  * - Ensures leading slash
+ * - Collapses duplicate slashes
  * - Strips trailing slashes (except root '/')
  * - Lowercases path
  */
 export function normalizePath(path: string): string {
-  const trimmed = path.trim().toLowerCase();
-  if (!trimmed || trimmed === '/') return '/';
-  const withLeading = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+  const collapsed = path.trim().toLowerCase().replace(/\/{2,}/g, '/');
+  if (!collapsed || collapsed === '/') return '/';
+  const withLeading = collapsed.startsWith('/') ? collapsed : `/${collapsed}`;
   return withLeading.replace(/\/+$/, '') || '/';
 }
 
@@ -24,15 +25,32 @@ function isDisallowedPublicBase(url: string): boolean {
   );
 }
 
+function normalizeBaseOrigin(rawUrl: string): string {
+  const trimmed = rawUrl.trim();
+  if (!trimmed || isDisallowedPublicBase(trimmed)) return '';
+
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+      return '';
+    }
+    const cleanPath = parsed.pathname.replace(/\/{2,}/g, '/').replace(/\/+$/, '');
+    return `${parsed.origin}${cleanPath}`;
+  } catch {
+    return '';
+  }
+}
+
 /**
  * Resolves the public origin for canonical links, NFC destinations, and QR codes.
  * Prefers VITE_PUBLIC_SITE_URL when configured; otherwise uses window.location.origin.
  */
 export function getPublicBaseUrl(): string {
   const env = (import.meta as { env?: Record<string, string | undefined> }).env;
-  const configuredBase = env?.VITE_PUBLIC_SITE_URL?.trim();
-  if (configuredBase && !isDisallowedPublicBase(configuredBase)) {
-    return configuredBase.replace(/\/+$/, '');
+  const configuredBase = env?.VITE_PUBLIC_SITE_URL;
+  if (typeof configuredBase === 'string' && configuredBase.trim() !== '') {
+    const normalized = normalizeBaseOrigin(configuredBase);
+    if (normalized) return normalized;
   }
 
   if (typeof window !== 'undefined' && window.location?.origin) {
@@ -43,19 +61,40 @@ export function getPublicBaseUrl(): string {
 }
 
 /**
- * Returns the canonical path for a registered Brand Page (e.g. '/atlas').
+ * Returns the canonical path for a registered Brand Page (e.g. '/atlas') or root '/'.
  */
 export function getBrandCanonicalPath(slug: BrandSlug | string): string {
-  const cleanSlug = slug.trim().toLowerCase().replace(/^\/+|\/+$/g, '');
+  const cleanSlug = slug
+    .trim()
+    .toLowerCase()
+    .replace(/\/{2,}/g, '/')
+    .replace(/^\/+|\/+$/g, '');
   return cleanSlug ? `/${cleanSlug}` : '/';
 }
 
 /**
- * Returns the canonical absolute URL for a Brand Page.
+ * Returns a canonical absolute URL for any public TAPP route path ('/', '/atlas', etc.).
+ */
+export function getCanonicalUrl(routePath = '/'): string {
+  const baseUrl = getPublicBaseUrl();
+  const cleanPath = normalizePath(routePath);
+  if (!baseUrl) return cleanPath;
+  return cleanPath === '/' ? `${baseUrl}/` : `${baseUrl}${cleanPath}`;
+}
+
+/**
+ * Resolves an absolute URL for a public static asset path (e.g. '/og/tapp-og.png').
+ */
+export function getAbsoluteAssetUrl(assetPath: string): string {
+  const baseUrl = getPublicBaseUrl();
+  const cleanAsset = `/${assetPath.trim().replace(/\/{2,}/g, '/').replace(/^\/+/, '')}`;
+  return baseUrl ? `${baseUrl}${cleanAsset}` : cleanAsset;
+}
+
+/**
+ * Returns the canonical absolute URL for a Brand Page (or root when slug is empty).
  * Used identically for QR generation, URL copying, and NFC chip programming.
  */
 export function getBrandCanonicalUrl(slug: BrandSlug | string): string {
-  const baseUrl = getPublicBaseUrl();
-  const canonicalPath = getBrandCanonicalPath(slug);
-  return baseUrl ? `${baseUrl}${canonicalPath}` : canonicalPath;
+  return getCanonicalUrl(getBrandCanonicalPath(slug));
 }

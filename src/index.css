@@ -13,7 +13,7 @@
     font-family: var(--font-arabic), var(--font-body);
     background-color: #FAFAF8;
     color: #121211;
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 }
 

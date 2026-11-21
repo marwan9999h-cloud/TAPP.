@@ -24,18 +24,36 @@ function isDisallowedDevUrl(url) {
   );
 }
 
+function normalizeBaseUrl(rawUrl) {
+  const trimmed = rawUrl?.trim();
+  if (!trimmed || isDisallowedDevUrl(trimmed)) return '';
+
+  const candidate =
+    trimmed.startsWith('http://') || trimmed.startsWith('https://')
+      ? trimmed
+      : `https://${trimmed}`;
+
+  try {
+    const parsed = new URL(candidate);
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+      return '';
+    }
+    const cleanPath = parsed.pathname.replace(/\/{2,}/g, '/').replace(/\/+$/, '');
+    return `${parsed.origin}${cleanPath}`;
+  } catch {
+    return '';
+  }
+}
+
 function resolveConfiguredBaseUrl() {
-  const explicit = process.env.VITE_PUBLIC_SITE_URL?.trim();
-  if (explicit && !isDisallowedDevUrl(explicit)) {
-    return explicit.replace(/\/+$/, '');
+  const explicit = normalizeBaseUrl(process.env.VITE_PUBLIC_SITE_URL || '');
+  if (explicit) {
+    return explicit;
   }
 
-  const vercelProd = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
-  if (vercelProd && !isDisallowedDevUrl(vercelProd)) {
-    const withProtocol = vercelProd.startsWith('http')
-      ? vercelProd
-      : `https://${vercelProd}`;
-    return withProtocol.replace(/\/+$/, '');
+  const vercelProd = normalizeBaseUrl(process.env.VERCEL_PROJECT_PRODUCTION_URL || '');
+  if (vercelProd) {
+    return vercelProd;
   }
 
   return '';
@@ -57,10 +75,11 @@ function replaceOrInsertTag(html, regex, replacement) {
 }
 
 function buildRouteHtml(templateHtml, routeMeta, baseUrl) {
+  const collapsed = routeMeta.canonicalPath.trim().replace(/\/{2,}/g, '/');
   const cleanPath =
-    routeMeta.canonicalPath === '/'
+    !collapsed || collapsed === '/'
       ? '/'
-      : `/${routeMeta.canonicalPath.replace(/^\/+|\/+$/g, '')}`;
+      : `/${collapsed.replace(/^\/+|\/+$/g, '')}`;
 
   const canonicalUrl = baseUrl
     ? cleanPath === '/'
@@ -68,9 +87,8 @@ function buildRouteHtml(templateHtml, routeMeta, baseUrl) {
       : `${baseUrl}${cleanPath}`
     : cleanPath;
 
-  const ogImageUrl = baseUrl
-    ? `${baseUrl}${routeMeta.ogImagePath}`
-    : routeMeta.ogImagePath;
+  const cleanOgPath = `/${routeMeta.ogImagePath.trim().replace(/\/{2,}/g, '/').replace(/^\/+/, '')}`;
+  const ogImageUrl = baseUrl ? `${baseUrl}${cleanOgPath}` : cleanOgPath;
 
   let html = templateHtml;
 
