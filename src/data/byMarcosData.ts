@@ -7,8 +7,15 @@ export const BY_MARCOS_EXTERNAL_CONFIG = {
   instagramUrl: 'https://www.instagram.com/bymarrcos/',
   instagramHandle: '@bymarrcos',
   whatsappUrl: 'https://wa.me/201210897916',
+  // Verified directly from whatsappUrl (E.164 international format +20 1210897916)
+  contactPhone: '+201210897916',
   studioAddress:
     'CAMP SHIZAR, PORT SAID STREET, IN FRONT OF BAKERY HOUSE, ALEXANDRIA, EGYPT',
+  studioAddressParts: {
+    street: 'Camp Shizar, Port Said Street, In Front of Bakery House',
+    locality: 'Alexandria',
+    country: 'Egypt',
+  },
   locationDetail: 'ALEXANDRIA / EGYPT',
   // TODO: Insert verified Google Maps location URL once confirmed (nullable by design)
   locationMapUrl: null as string | null,

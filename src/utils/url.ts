@@ -41,9 +41,12 @@ function normalizeBaseOrigin(rawUrl: string): string {
   }
 }
 
+export const OFFICIAL_SITE_URL = 'https://tapp-link.vercel.app';
+
 /**
  * Resolves the public origin for canonical links, NFC destinations, and QR codes.
- * Prefers VITE_PUBLIC_SITE_URL when configured; otherwise uses window.location.origin.
+ * Prefers a valid non-preview VITE_PUBLIC_SITE_URL; otherwise uses OFFICIAL_SITE_URL
+ * so QR codes, copied links, and shared URLs never leak localhost or editor preview origins.
  */
 export function getPublicBaseUrl(): string {
   const env = (import.meta as { env?: Record<string, string | undefined> }).env;
@@ -53,11 +56,7 @@ export function getPublicBaseUrl(): string {
     if (normalized) return normalized;
   }
 
-  if (typeof window !== 'undefined' && window.location?.origin) {
-    return window.location.origin.replace(/\/+$/, '');
-  }
-
-  return '';
+  return OFFICIAL_SITE_URL;
 }
 
 /**

@@ -1,7 +1,9 @@
 import { useEffect } from 'react';
+import { buildStructuredDataForRoute } from '../config/structuredData';
 import {
   getAbsoluteAssetUrl,
   getCanonicalUrl,
+  getPublicBaseUrl,
   normalizePath,
 } from '../utils/url';
 
@@ -11,7 +13,9 @@ export interface DocumentMetaInput {
   canonicalPath: string;
   lang: 'en' | 'ar';
   dir: 'ltr' | 'rtl';
+  ogLocale?: string;
   ogImagePath: string;
+  ogImageAlt?: string;
   ogType?: string;
   robots?: string;
 }
@@ -54,9 +58,33 @@ function removeCanonicalLink(): void {
   if (link) link.remove();
 }
 
+function upsertJsonLd(data: Record<string, unknown>): void {
+  let script = document.head.querySelector(
+    'script[type="application/ld+json"]#tapp-structured-data'
+  ) as HTMLScriptElement | null;
+
+  if (!script) {
+    // Also clean any prerendered untagged ld+json script before managing our single tag
+    const existing = document.head.querySelector('script[type="application/ld+json"]');
+    if (existing) existing.remove();
+
+    script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.id = 'tapp-structured-data';
+    document.head.appendChild(script);
+  }
+
+  script.textContent = JSON.stringify(data);
+}
+
+function removeJsonLd(): void {
+  const scripts = document.head.querySelectorAll('script[type="application/ld+json"]');
+  scripts.forEach((s) => s.remove());
+}
+
 /**
- * Synchronizes document title, html lang/dir, canonical URL, and Open Graph / Twitter
- * tags in the browser DOM across client-side routes and language toggles.
+ * Synchronizes document title, html lang/dir, canonical URL, Open Graph / Twitter
+ * tags, and Schema.org JSON-LD in the browser DOM across client-side routes.
  */
 export function useDocumentMeta(meta: DocumentMetaInput | null): void {
   useEffect(() => {
@@ -67,6 +95,7 @@ export function useDocumentMeta(meta: DocumentMetaInput | null): void {
 
     const canonicalUrl = !isNotFound ? getCanonicalUrl(cleanPath) : cleanPath;
     const absoluteOgImage = getAbsoluteAssetUrl(meta.ogImagePath);
+    const ogLocale = meta.ogLocale || (meta.lang === 'ar' ? 'ar_EG' : 'en_GB');
 
     document.documentElement.lang = meta.lang;
     document.documentElement.dir = meta.dir;
@@ -88,10 +117,14 @@ export function useDocumentMeta(meta: DocumentMetaInput | null): void {
 
     upsertMetaTag('property', 'og:site_name', 'TAPP');
     upsertMetaTag('property', 'og:type', meta.ogType || 'website');
+    upsertMetaTag('property', 'og:locale', ogLocale);
     upsertMetaTag('property', 'og:title', meta.title);
     upsertMetaTag('property', 'og:description', meta.description);
     upsertMetaTag('property', 'og:url', canonicalUrl);
     upsertMetaTag('property', 'og:image', absoluteOgImage);
+    if (meta.ogImageAlt) {
+      upsertMetaTag('property', 'og:image:alt', meta.ogImageAlt);
+    }
     upsertMetaTag('property', 'og:image:width', '1200');
     upsertMetaTag('property', 'og:image:height', '630');
 
@@ -99,13 +132,26 @@ export function useDocumentMeta(meta: DocumentMetaInput | null): void {
     upsertMetaTag('name', 'twitter:title', meta.title);
     upsertMetaTag('name', 'twitter:description', meta.description);
     upsertMetaTag('name', 'twitter:image', absoluteOgImage);
+
+    if (isNotFound) {
+      removeJsonLd();
+    } else {
+      const jsonLd = buildStructuredDataForRoute(cleanPath, getPublicBaseUrl(), meta.lang);
+      if (jsonLd) {
+        upsertJsonLd(jsonLd);
+      } else {
+        removeJsonLd();
+      }
+    }
   }, [
     meta?.title,
     meta?.description,
     meta?.canonicalPath,
     meta?.lang,
     meta?.dir,
+    meta?.ogLocale,
     meta?.ogImagePath,
+    meta?.ogImageAlt,
     meta?.ogType,
     meta?.robots,
   ]);

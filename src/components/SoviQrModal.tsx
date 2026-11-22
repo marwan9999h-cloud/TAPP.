@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { X, Copy, Check, QrCode, Download } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
+import { X, Copy, Check, QrCode, Download, Share2 } from 'lucide-react';
 import { getBrandCanonicalUrl } from '../utils/url';
+import { copyTextToClipboard, shareBrandPage } from '../utils/share';
 import {
   generateBrandQrSvg,
   downloadBrandQrSvg,
@@ -22,11 +23,17 @@ export const SoviQrModal: React.FC<SoviQrModalProps> = ({
   const [copied, setCopied] = useState(false);
   const [qrSvg, setQrSvg] = useState<string>('');
   const [qrError, setQrError] = useState(false);
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+  const shouldReduceMotion = useReducedMotion();
 
   const canonicalUrl = getBrandCanonicalUrl('sovi');
 
   useEffect(() => {
     if (!isOpen) return;
+
+    previousFocusRef.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
 
     let cancelled = false;
     setQrError(false);
@@ -44,16 +51,52 @@ export const SoviQrModal: React.FC<SoviQrModalProps> = ({
         if (!cancelled) setQrError(true);
       });
 
+    const focusTimer = window.setTimeout(() => {
+      closeButtonRef.current?.focus();
+    }, 30);
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
     return () => {
       cancelled = true;
+      window.clearTimeout(focusTimer);
+      window.removeEventListener('keydown', handleKeyDown);
+      previousFocusRef.current?.focus();
     };
-  }, [isOpen, canonicalUrl]);
+  }, [isOpen, canonicalUrl, onClose]);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(canonicalUrl);
-    setCopied(true);
-    onToast('LINK COPIED TO CLIPBOARD');
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopy = async () => {
+    const ok = await copyTextToClipboard(canonicalUrl);
+    if (ok) {
+      setCopied(true);
+      onToast('LINK COPIED TO CLIPBOARD');
+      setTimeout(() => setCopied(false), 2000);
+    } else {
+      onToast('UNABLE TO COPY AUTOMATICALLY');
+    }
+  };
+
+  const handleShare = async () => {
+    const outcome = await shareBrandPage({
+      title: 'SOVI — Handmade Goods',
+      text: 'Handmade pieces, made with love.',
+      url: canonicalUrl,
+    });
+
+    if (outcome === 'shared') {
+      onToast('PAGE SHARED');
+    } else if (outcome === 'copied') {
+      setCopied(true);
+      onToast('LINK COPIED TO CLIPBOARD');
+      setTimeout(() => setCopied(false), 2000);
+    } else if (outcome === 'failed' || outcome === 'unavailable') {
+      onToast('SHARE UNAVAILABLE — USE COPY OR QR');
+    }
   };
 
   const handleDownloadSvg = async () => {
@@ -86,7 +129,12 @@ export const SoviQrModal: React.FC<SoviQrModalProps> = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="sovi-qr-modal-title"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        >
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -96,16 +144,17 @@ export const SoviQrModal: React.FC<SoviQrModalProps> = ({
           />
 
           <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
+            initial={shouldReduceMotion ? { opacity: 1 } : { scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.95, opacity: 0 }}
-            transition={{ type: 'spring', damping: 26, stiffness: 300 }}
-            className="relative w-full max-w-sm bg-[#FAF8F5] border border-[#E2D4E8] rounded-2xl z-10 p-6 shadow-xl flex flex-col items-center text-center text-[#34203B]"
+            exit={shouldReduceMotion ? { opacity: 0 } : { scale: 0.95, opacity: 0 }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.18 }}
+            className="relative w-full max-w-sm max-h-[90dvh] overflow-y-auto bg-[#FAF8F5] border border-[#E2D4E8] rounded-2xl z-10 p-6 shadow-xl flex flex-col items-center text-center text-[#34203B]"
           >
             <button
+              ref={closeButtonRef}
               onClick={onClose}
               type="button"
-              className="absolute top-4 right-4 p-1.5 rounded-full text-[#8B6D93] hover:text-[#34203B] hover:bg-[#F3EDF7] transition-colors cursor-pointer"
+              className="absolute top-4 right-4 p-1.5 rounded-full text-[#8B6D93] hover:text-[#34203B] hover:bg-[#F3EDF7] transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B6D93]"
               aria-label="Close QR modal"
             >
               <X className="w-4 h-4" />
@@ -115,7 +164,10 @@ export const SoviQrModal: React.FC<SoviQrModalProps> = ({
               <QrCode className="w-5 h-5" />
             </div>
 
-            <h3 className="font-serif-custom text-2xl tracking-[0.18em] text-[#34203B] uppercase">
+            <h3
+              id="sovi-qr-modal-title"
+              className="font-serif-custom text-2xl tracking-[0.18em] text-[#34203B] uppercase"
+            >
               SOVI
             </h3>
             <p className="text-[11px] font-mono-custom tracking-[0.2em] text-[#7D5B84] uppercase mt-1">
@@ -143,31 +195,42 @@ export const SoviQrModal: React.FC<SoviQrModalProps> = ({
               {canonicalUrl}
             </p>
 
-            {/* Copy Canonical URL */}
-            <button
-              onClick={handleCopy}
-              type="button"
-              className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-b from-[#FAF5FC] to-[#F4EBF7] hover:from-[#F6ECFA] hover:to-[#EFE1F5] active:scale-[0.985] border border-[#E2D4E8] hover:border-[#C8B2D4] rounded-xl text-xs font-mono-custom tracking-wider text-[#34203B] transition-all cursor-pointer"
-            >
-              {copied ? (
-                <>
-                  <Check className="w-4 h-4 text-[#5C3D61]" />
-                  <span>COPIED TO CLIPBOARD</span>
-                </>
-              ) : (
-                <>
-                  <Copy className="w-4 h-4 text-[#7D5B84]" />
-                  <span>COPY SOVI URL</span>
-                </>
-              )}
-            </button>
+            {/* Copy Canonical URL & Share Page */}
+            <div className="w-full grid grid-cols-2 gap-2.5">
+              <button
+                onClick={handleCopy}
+                type="button"
+                className="flex items-center justify-center gap-1.5 py-3 px-2 bg-gradient-to-b from-[#FAF5FC] to-[#F4EBF7] hover:from-[#F6ECFA] hover:to-[#EFE1F5] active:scale-[0.985] border border-[#E2D4E8] hover:border-[#C8B2D4] rounded-xl text-[11px] font-mono-custom tracking-wider text-[#34203B] transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B6D93]"
+              >
+                {copied ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-[#5C3D61] shrink-0" />
+                    <span>COPIED</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5 text-[#7D5B84] shrink-0" />
+                    <span>COPY URL</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                onClick={handleShare}
+                type="button"
+                className="flex items-center justify-center gap-1.5 py-3 px-2 bg-gradient-to-b from-[#FAF5FC] to-[#F4EBF7] hover:from-[#F6ECFA] hover:to-[#EFE1F5] active:scale-[0.985] border border-[#E2D4E8] hover:border-[#C8B2D4] rounded-xl text-[11px] font-mono-custom tracking-wider text-[#34203B] transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B6D93]"
+              >
+                <Share2 className="w-3.5 h-3.5 text-[#7D5B84] shrink-0" />
+                <span>SHARE PAGE</span>
+              </button>
+            </div>
 
             {/* Print-ready Export */}
             <div className="w-full grid grid-cols-2 gap-2.5 mt-2.5">
               <button
                 onClick={handleDownloadSvg}
                 type="button"
-                className="flex items-center justify-center gap-1.5 py-2.5 bg-white hover:bg-[#F6F0F8] active:scale-[0.985] border border-[#E2D4E8] rounded-xl text-[11px] font-mono-custom tracking-wider text-[#5C3D61] transition-colors cursor-pointer"
+                className="flex items-center justify-center gap-1.5 py-2.5 bg-white hover:bg-[#F6F0F8] active:scale-[0.985] border border-[#E2D4E8] rounded-xl text-[11px] font-mono-custom tracking-wider text-[#5C3D61] transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B6D93]"
               >
                 <Download className="w-3.5 h-3.5 text-[#8B6D93]" />
                 <span>SVG</span>
@@ -175,7 +238,7 @@ export const SoviQrModal: React.FC<SoviQrModalProps> = ({
               <button
                 onClick={handleDownloadPng}
                 type="button"
-                className="flex items-center justify-center gap-1.5 py-2.5 bg-white hover:bg-[#F6F0F8] active:scale-[0.985] border border-[#E2D4E8] rounded-xl text-[11px] font-mono-custom tracking-wider text-[#5C3D61] transition-colors cursor-pointer"
+                className="flex items-center justify-center gap-1.5 py-2.5 bg-white hover:bg-[#F6F0F8] active:scale-[0.985] border border-[#E2D4E8] rounded-xl text-[11px] font-mono-custom tracking-wider text-[#5C3D61] transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B6D93]"
               >
                 <Download className="w-3.5 h-3.5 text-[#8B6D93]" />
                 <span>PNG 1024px</span>

@@ -1,8 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { X, Copy, Check, QrCode, Download } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
+import { X, Copy, Check, QrCode, Download, Share2, UserPlus } from 'lucide-react';
 import { BrandSlug } from '../config/brands';
+import { getBrandContactInput, isBrandContactEligible } from '../data/brandContacts';
 import { getBrandCanonicalUrl } from '../utils/url';
+import { copyTextToClipboard, shareBrandPage } from '../utils/share';
+import { downloadBrandVCard } from '../utils/vcard';
 import {
   generateBrandQrSvg,
   downloadBrandQrSvg,
@@ -29,11 +32,19 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   const [copied, setCopied] = useState(false);
   const [qrSvg, setQrSvg] = useState<string>('');
   const [qrError, setQrError] = useState(false);
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+  const shouldReduceMotion = useReducedMotion();
 
   const canonicalUrl = getBrandCanonicalUrl(brandSlug);
+  const contactInput = getBrandContactInput(brandSlug);
+  const showSaveContact = isBrandContactEligible(brandSlug);
 
   useEffect(() => {
     if (!isOpen) return;
+
+    previousFocusRef.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
 
     let cancelled = false;
     setQrError(false);
@@ -51,16 +62,63 @@ export const ShareModal: React.FC<ShareModalProps> = ({
         if (!cancelled) setQrError(true);
       });
 
+    const focusTimer = window.setTimeout(() => {
+      closeButtonRef.current?.focus();
+    }, 30);
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
     return () => {
       cancelled = true;
+      window.clearTimeout(focusTimer);
+      window.removeEventListener('keydown', handleKeyDown);
+      previousFocusRef.current?.focus();
     };
-  }, [isOpen, canonicalUrl]);
+  }, [isOpen, canonicalUrl, onClose]);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(canonicalUrl);
-    setCopied(true);
-    onToast('LINK COPIED TO CLIPBOARD');
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopy = async () => {
+    const ok = await copyTextToClipboard(canonicalUrl);
+    if (ok) {
+      setCopied(true);
+      onToast('LINK COPIED TO CLIPBOARD');
+      setTimeout(() => setCopied(false), 2000);
+    } else {
+      onToast('UNABLE TO COPY AUTOMATICALLY');
+    }
+  };
+
+  const handleShare = async () => {
+    const outcome = await shareBrandPage({
+      title: brandTitle,
+      text: brandSubtitle,
+      url: canonicalUrl,
+    });
+
+    if (outcome === 'shared') {
+      onToast('PAGE SHARED');
+    } else if (outcome === 'copied') {
+      setCopied(true);
+      onToast('LINK COPIED TO CLIPBOARD');
+      setTimeout(() => setCopied(false), 2000);
+    } else if (outcome === 'failed' || outcome === 'unavailable') {
+      onToast('SHARE UNAVAILABLE — USE COPY OR QR');
+    }
+    // 'cancelled' is treated quietly without alarming the visitor
+  };
+
+  const handleSaveContact = () => {
+    if (!showSaveContact) return;
+    const ok = downloadBrandVCard(contactInput);
+    if (ok) {
+      onToast('CONTACT CARD (.VCF) DOWNLOADED');
+    } else {
+      onToast('UNABLE TO EXPORT CONTACT FILE');
+    }
   };
 
   const handleDownloadSvg = async () => {
@@ -93,7 +151,12 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="atlas-share-modal-title"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        >
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -103,18 +166,19 @@ export const ShareModal: React.FC<ShareModalProps> = ({
           />
 
           <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
+            initial={shouldReduceMotion ? { opacity: 1 } : { scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.95, opacity: 0 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="relative w-full max-w-sm bg-[#111111] border border-[#292929] rounded-2xl z-10 p-6 shadow-2xl flex flex-col items-center text-center"
+            exit={shouldReduceMotion ? { opacity: 0 } : { scale: 0.95, opacity: 0 }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.18 }}
+            className="relative w-full max-w-sm max-h-[90dvh] overflow-y-auto bg-[#111111] border border-[#292929] rounded-2xl z-10 p-6 shadow-2xl flex flex-col items-center text-center"
           >
             {/* Close button */}
             <button
+              ref={closeButtonRef}
               onClick={onClose}
               type="button"
-              className="absolute top-4 right-4 p-1 text-[#8A8A86] hover:text-[#F2F0EB] transition-colors cursor-pointer"
-              aria-label="Close"
+              className="absolute top-4 right-4 p-1.5 rounded-lg text-[#8A8A86] hover:text-[#F2F0EB] transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5C67DE]"
+              aria-label="Close share dialog"
             >
               <X className="w-5 h-5" />
             </button>
@@ -123,7 +187,10 @@ export const ShareModal: React.FC<ShareModalProps> = ({
               <QrCode className="w-5 h-5" />
             </div>
 
-            <h3 className="font-display text-lg font-bold uppercase text-[#F2F0EB]">
+            <h3
+              id="atlas-share-modal-title"
+              className="font-display text-lg font-bold uppercase text-[#F2F0EB]"
+            >
               {brandTitle}
             </h3>
             <p className="text-xs font-mono-custom text-[#8A8A86] mt-1">
@@ -151,31 +218,42 @@ export const ShareModal: React.FC<ShareModalProps> = ({
               {canonicalUrl}
             </p>
 
-            {/* Copy Link Button */}
-            <button
-              onClick={handleCopy}
-              type="button"
-              className="w-full flex items-center justify-center gap-2 py-3 bg-[#181818] hover:bg-[#202020] active:scale-[0.98] border border-[#2d2d2d] rounded-xl text-xs font-mono-custom tracking-wider text-[#F2F0EB] transition-colors cursor-pointer"
-            >
-              {copied ? (
-                <>
-                  <Check className="w-4 h-4 text-emerald-400" />
-                  <span>COPIED TO CLIPBOARD</span>
-                </>
-              ) : (
-                <>
-                  <Copy className="w-4 h-4 text-[#8A8A86]" />
-                  <span>COPY SMART PAGE URL</span>
-                </>
-              )}
-            </button>
+            {/* Copy Link & Web Share */}
+            <div className="w-full grid grid-cols-2 gap-2">
+              <button
+                onClick={handleCopy}
+                type="button"
+                className="flex items-center justify-center gap-1.5 py-3 px-2 bg-[#181818] hover:bg-[#202020] active:scale-[0.98] border border-[#2d2d2d] rounded-xl text-[11px] font-mono-custom tracking-wider text-[#F2F0EB] transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5C67DE]"
+              >
+                {copied ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span>COPIED</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5 text-[#8A8A86] shrink-0" />
+                    <span>COPY LINK</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                onClick={handleShare}
+                type="button"
+                className="flex items-center justify-center gap-1.5 py-3 px-2 bg-[#181818] hover:bg-[#202020] active:scale-[0.98] border border-[#2d2d2d] rounded-xl text-[11px] font-mono-custom tracking-wider text-[#F2F0EB] transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5C67DE]"
+              >
+                <Share2 className="w-3.5 h-3.5 text-[#8A8A86] shrink-0" />
+                <span>SHARE</span>
+              </button>
+            </div>
 
             {/* Print-ready QR Export */}
             <div className="w-full grid grid-cols-2 gap-2 mt-2.5">
               <button
                 onClick={handleDownloadSvg}
                 type="button"
-                className="flex items-center justify-center gap-1.5 py-2.5 bg-[#151515] hover:bg-[#1E1E1E] active:scale-[0.98] border border-[#262626] rounded-xl text-[11px] font-mono-custom tracking-wider text-[#C8C6C0] hover:text-[#F2F0EB] transition-colors cursor-pointer"
+                className="flex items-center justify-center gap-1.5 py-2.5 bg-[#151515] hover:bg-[#1E1E1E] active:scale-[0.98] border border-[#262626] rounded-xl text-[11px] font-mono-custom tracking-wider text-[#C8C6C0] hover:text-[#F2F0EB] transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5C67DE]"
               >
                 <Download className="w-3.5 h-3.5 text-[#8A8A86]" />
                 <span>SVG</span>
@@ -183,12 +261,24 @@ export const ShareModal: React.FC<ShareModalProps> = ({
               <button
                 onClick={handleDownloadPng}
                 type="button"
-                className="flex items-center justify-center gap-1.5 py-2.5 bg-[#151515] hover:bg-[#1E1E1E] active:scale-[0.98] border border-[#262626] rounded-xl text-[11px] font-mono-custom tracking-wider text-[#C8C6C0] hover:text-[#F2F0EB] transition-colors cursor-pointer"
+                className="flex items-center justify-center gap-1.5 py-2.5 bg-[#151515] hover:bg-[#1E1E1E] active:scale-[0.98] border border-[#262626] rounded-xl text-[11px] font-mono-custom tracking-wider text-[#C8C6C0] hover:text-[#F2F0EB] transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5C67DE]"
               >
                 <Download className="w-3.5 h-3.5 text-[#8A8A86]" />
                 <span>PNG 1024px</span>
               </button>
             </div>
+
+            {/* Save Contact only when eligible */}
+            {showSaveContact && (
+              <button
+                onClick={handleSaveContact}
+                type="button"
+                className="w-full mt-2.5 flex items-center justify-center gap-2 py-2.5 bg-[#181818] hover:bg-[#202020] border border-[#2d2d2d] rounded-xl text-[11px] font-mono-custom tracking-wider text-[#F2F0EB] transition-colors cursor-pointer"
+              >
+                <UserPlus className="w-3.5 h-3.5 text-[#5C67DE]" />
+                <span>SAVE CONTACT (.VCF)</span>
+              </button>
+            )}
           </motion.div>
         </div>
       )}

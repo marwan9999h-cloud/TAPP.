@@ -5,13 +5,15 @@ export interface SeoEntry {
   description: string;
   lang: 'en' | 'ar';
   dir: 'ltr' | 'rtl';
+  ogLocale: string;
   ogImagePath: string;
+  ogImageAlt: string;
   ogType: string;
+  lastmod?: string;
   robots?: string;
 }
 
-export interface BilingualBrandSeoEntry extends SeoEntry {
-  slug: 'bymarcos';
+export interface BilingualSeoEntry extends SeoEntry {
   localized: Record<
     'en' | 'ar',
     {
@@ -19,8 +21,14 @@ export interface BilingualBrandSeoEntry extends SeoEntry {
       description: string;
       lang: 'en' | 'ar';
       dir: 'ltr' | 'rtl';
+      ogLocale: string;
+      ogImageAlt: string;
     }
   >;
+}
+
+export interface BilingualBrandSeoEntry extends BilingualSeoEntry {
+  slug: 'bymarcos';
 }
 
 export interface BrandSeoEntry extends SeoEntry {
@@ -29,6 +37,7 @@ export interface BrandSeoEntry extends SeoEntry {
 
 export declare const HOME_SEO: SeoEntry;
 export declare const NOT_FOUND_SEO: SeoEntry;
+export declare const GUIDE_SEO: BilingualSeoEntry;
 export declare const BRAND_SEO: {
   atlas: BrandSeoEntry;
   sovi: BrandSeoEntry;

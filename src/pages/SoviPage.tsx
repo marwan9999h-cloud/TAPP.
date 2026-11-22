@@ -2,16 +2,18 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowUpRight, Share2, CheckCircle2, MessageCircle, Instagram, QrCode } from 'lucide-react';
 import { BRAND_FOOTER_CONFIG } from '../config/brands';
+import { SOVI_EXTERNAL_CONFIG } from '../data/soviData';
 import { navigate } from '../router';
 import { getBrandCanonicalUrl } from '../utils/url';
+import { shareBrandPage } from '../utils/share';
 import { SoviQrModal } from '../components/SoviQrModal';
 
 export const SoviPage: React.FC = () => {
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const INSTAGRAM_URL = 'https://www.instagram.com/sovi_storee?stkn=c3lkbGw0dTltcTgw';
-  const WHATSAPP_URL = 'https://chat.whatsapp.com/Fzyd7ZbQkG75ZpUcVSCdtb?s=cl&p=a&ilr=0';
+  const INSTAGRAM_URL = SOVI_EXTERNAL_CONFIG.instagramUrl;
+  const WHATSAPP_URL = SOVI_EXTERNAL_CONFIG.whatsappCommunityUrl;
   const canonicalUrl = getBrandCanonicalUrl('sovi');
 
   const showToast = (msg: string) => {
@@ -21,16 +23,19 @@ export const SoviPage: React.FC = () => {
     }, 2200);
   };
 
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: 'SOVI — Handmade Goods',
-        text: 'Handmade pieces, made with love.',
-        url: canonicalUrl,
-      }).catch(() => {});
-    } else {
-      navigator.clipboard.writeText(canonicalUrl);
+  const handleShare = async () => {
+    const outcome = await shareBrandPage({
+      title: 'SOVI — Handmade Goods',
+      text: 'Handmade pieces, made with love.',
+      url: canonicalUrl,
+    });
+
+    if (outcome === 'shared') {
+      showToast('PAGE SHARED');
+    } else if (outcome === 'copied') {
       showToast('LINK COPIED TO CLIPBOARD');
+    } else if (outcome === 'failed' || outcome === 'unavailable') {
+      showToast('SHARE UNAVAILABLE — USE QR');
     }
   };
 

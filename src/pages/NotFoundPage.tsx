@@ -45,14 +45,27 @@ export const NotFoundPage: React.FC = () => {
             الرابط الذي تحاول الوصول إليه غير متاح أو قد يكون تم تغييره.
           </p>
 
-          <button
-            type="button"
-            onClick={() => navigate('/')}
-            className="w-full sm:w-auto px-8 py-3.5 bg-[#121211] hover:bg-[#262624] text-[#FAFAF8] font-bold text-sm rounded-xl transition-colors shadow-sm inline-flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <span>العودة للرئيسية</span>
-            <ArrowLeft className="w-4 h-4" />
-          </button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={() => navigate('/')}
+              className="w-full sm:w-auto px-8 py-3.5 bg-[#121211] hover:bg-[#262624] text-[#FAFAF8] font-bold text-sm rounded-xl transition-colors shadow-sm inline-flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span>العودة للرئيسية</span>
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+
+            <a
+              href="/guide"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate('/guide');
+              }}
+              className="w-full sm:w-auto px-6 py-3.5 bg-white hover:bg-[#EFEFEA] text-[#121211] border border-[#DFDFD8] font-semibold text-sm rounded-xl transition-colors inline-flex items-center justify-center"
+            >
+              دليل الاستخدام
+            </a>
+          </div>
         </div>
       </main>
 

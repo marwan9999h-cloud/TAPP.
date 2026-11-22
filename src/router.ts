@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BrandSlug, getBrandByPath, getBrandBySlug } from './config/brands';
 
-export type RoutePath = '/' | '/not-found' | `/${BrandSlug}`;
+export type RoutePath = '/' | '/guide' | '/not-found' | `/${BrandSlug}`;
 
 /**
  * Pure route resolver from browser location parts.
@@ -17,6 +17,10 @@ export function resolveRoute(
   // 1. Strict direct URL pathname matching (trailing slashes normalized)
   const pathname = rawPathname.toLowerCase().replace(/\/+$/, '') || '/';
 
+  if (pathname === '/guide') {
+    return '/guide';
+  }
+
   if (pathname !== '/') {
     const matchedBrand = getBrandByPath(pathname);
     return matchedBrand ? matchedBrand.path : '/not-found';
@@ -27,14 +31,16 @@ export function resolveRoute(
   const rawBrandParam = params.get('brand') || params.get('b') || params.get('p') || '';
   const brandParam = rawBrandParam.toLowerCase().replace(/^\/+|\/+$/g, '');
   if (brandParam !== '') {
+    if (brandParam === 'guide') return '/guide';
     const matchedQueryBrand = getBrandBySlug(brandParam);
     return matchedQueryBrand ? matchedQueryBrand.path : '/not-found';
   }
 
-  // 3. Hash fallback on '/' (e.g. #/atlas, #atlas, #/bymarcos)
+  // 3. Hash fallback on '/' (e.g. #/atlas, #atlas, #/bymarcos, #/guide)
   const lowerHash = rawHash.toLowerCase();
   const cleanHash = lowerHash.replace(/^#\/?/, '').replace(/\/+$/, '');
   if (cleanHash !== '') {
+    if (cleanHash === 'guide') return '/guide';
     const matchedHashBrand = getBrandBySlug(cleanHash);
     if (matchedHashBrand) return matchedHashBrand.path;
     if (lowerHash.startsWith('#/')) return '/not-found';
@@ -71,8 +77,10 @@ export function navigate(path: RoutePath | string) {
   window.dispatchEvent(new Event('popstate'));
 }
 
-export function useCurrentRoute(): RoutePath {
-  const [currentRoute, setCurrentRoute] = useState<RoutePath>(getCleanPath());
+export function useCurrentRoute(initialRoute?: RoutePath): RoutePath {
+  const [currentRoute, setCurrentRoute] = useState<RoutePath>(() =>
+    typeof window === 'undefined' ? (initialRoute ?? '/') : getCleanPath()
+  );
 
   useEffect(() => {
     const handleLocationChange = () => {

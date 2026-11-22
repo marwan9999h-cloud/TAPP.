@@ -324,6 +324,17 @@ export const HomePage: React.FC = () => {
                     {item.label}
                   </a>
                 ))}
+                <a
+                  href="/guide"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setMobileMenuOpen(false);
+                    navigate('/guide');
+                  }}
+                  className="w-full text-right py-3 px-2 text-sm font-semibold text-[#555552] border-b border-[#F0F0EB] rounded-lg hover:bg-[#EFEFEA]/70 active:bg-[#EFEFEA] transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#121211] block"
+                >
+                  دليل الاستخدام والأسئلة الشائعة
+                </a>
                 <button
                   type="button"
                   onClick={openOrderModal}
@@ -528,13 +539,25 @@ export const HomePage: React.FC = () => {
                 مش مجرد لينك على الإنترنت — ده كارت بتسيبه على طاولة الكافيه أو في إيد عميلك، يوصّله بهوية براندك الحقيقية.
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => scrollToSection('examples')}
-              className="px-5 py-3 bg-[#FAFAF8] hover:bg-white text-[#121211] text-xs font-bold rounded-xl shrink-0 transition-colors cursor-pointer whitespace-nowrap"
-            >
-              شوف صفحات حقيقية
-            </button>
+            <div className="flex flex-wrap items-center justify-center gap-2.5 shrink-0">
+              <a
+                href="/guide"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate('/guide');
+                }}
+                className="px-4 py-3 bg-[#1D1D1B] hover:bg-[#2A2A27] text-[#FAFAF8] border border-[#383834] text-xs font-semibold rounded-xl transition-colors whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C5A880]"
+              >
+                دليل الاستخدام والأسئلة الشائعة
+              </a>
+              <button
+                type="button"
+                onClick={() => scrollToSection('examples')}
+                className="px-5 py-3 bg-[#FAFAF8] hover:bg-white text-[#121211] text-xs font-bold rounded-xl shrink-0 transition-colors cursor-pointer whitespace-nowrap"
+              >
+                شوف صفحات حقيقية
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -956,7 +979,56 @@ export const HomePage: React.FC = () => {
             </a>
           </div>
 
-          <div className="mt-12 pt-6 border-t border-[#E8E8E4]/80 w-full flex items-center justify-center">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs font-medium text-[#706E6B]">
+            <a
+              href="/guide"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate('/guide');
+              }}
+              className="px-3 py-1.5 rounded-lg hover:bg-[#EFEFEA] text-[#121211] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#121211]"
+            >
+              دليل الاستخدام والأسئلة الشائعة
+            </a>
+            <span aria-hidden="true" className="text-[#D4D3CC]">
+              ·
+            </span>
+            <a
+              href="/atlas"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate('/atlas');
+              }}
+              dir="ltr"
+              className="font-mono-custom hover:text-[#121211] transition-colors"
+            >
+              ATLAS
+            </a>
+            <a
+              href="/sovi"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate('/sovi');
+              }}
+              dir="ltr"
+              className="font-mono-custom hover:text-[#121211] transition-colors"
+            >
+              SOVI
+            </a>
+            <a
+              href="/bymarcos"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate('/bymarcos');
+              }}
+              dir="ltr"
+              className="font-mono-custom hover:text-[#121211] transition-colors"
+            >
+              BY MARCOS
+            </a>
+          </div>
+
+          <div className="mt-8 pt-6 border-t border-[#E8E8E4]/80 w-full flex items-center justify-center">
             <span
               dir="ltr"
               className="text-[11px] font-mono-custom tracking-[0.18em] text-[#9E9B95] select-none"

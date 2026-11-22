@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import {
   ArrowUpRight,
@@ -8,12 +8,17 @@ import {
   Check,
   Download,
   CheckCircle2,
+  Share2,
+  UserPlus,
 } from 'lucide-react';
 import { BRAND_FOOTER_CONFIG } from '../config/brands';
 import { BRAND_SEO } from '../config/seoRoutes.mjs';
 import { useDocumentMeta } from '../hooks/useDocumentMeta';
 import { navigate } from '../router';
 import { getBrandCanonicalUrl } from '../utils/url';
+import { copyTextToClipboard, shareBrandPage } from '../utils/share';
+import { downloadBrandVCard } from '../utils/vcard';
+import { getBrandContactInput, isBrandContactEligible } from '../data/brandContacts';
 import {
   generateBrandQrSvg,
   downloadBrandQrSvg,
@@ -75,14 +80,21 @@ export const ByMarcosPage: React.FC = () => {
     canonicalPath: BRAND_SEO.bymarcos.canonicalPath,
     lang: 'en',
     dir: 'ltr',
+    ogLocale: BRAND_SEO.bymarcos.ogLocale,
     ogImagePath: BRAND_SEO.bymarcos.ogImagePath,
+    ogImageAlt: BRAND_SEO.bymarcos.ogImageAlt,
     ogType: BRAND_SEO.bymarcos.ogType,
   });
+
+  const closeQrButtonRef = useRef<HTMLButtonElement | null>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
   const canonicalUrl = getBrandCanonicalUrl('bymarcos');
   const bookingUrl = getByMarcosBookingWhatsAppUrl();
   const websiteUrl = getByMarcosWebsiteUrl();
   const locationMapUrl = getByMarcosLocationMapUrl();
+  const contactInput = getBrandContactInput('bymarcos');
+  const showSaveContact = isBrandContactEligible('bymarcos');
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -93,6 +105,9 @@ export const ByMarcosPage: React.FC = () => {
 
   useEffect(() => {
     if (!isQrOpen) return;
+
+    previousFocusRef.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
 
     let cancelled = false;
     setQrError(false);
@@ -110,6 +125,10 @@ export const ByMarcosPage: React.FC = () => {
         if (!cancelled) setQrError(true);
       });
 
+    const focusTimer = window.setTimeout(() => {
+      closeQrButtonRef.current?.focus();
+    }, 30);
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setIsQrOpen(false);
@@ -119,15 +138,49 @@ export const ByMarcosPage: React.FC = () => {
 
     return () => {
       cancelled = true;
+      window.clearTimeout(focusTimer);
       window.removeEventListener('keydown', handleKeyDown);
+      previousFocusRef.current?.focus();
     };
   }, [isQrOpen, canonicalUrl]);
 
-  const handleCopyUrl = () => {
-    navigator.clipboard.writeText(canonicalUrl);
-    setCopied(true);
-    showToast('URL COPIED TO CLIPBOARD');
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopyUrl = async () => {
+    const ok = await copyTextToClipboard(canonicalUrl);
+    if (ok) {
+      setCopied(true);
+      showToast('URL COPIED TO CLIPBOARD');
+      setTimeout(() => setCopied(false), 2000);
+    } else {
+      showToast('UNABLE TO COPY AUTOMATICALLY');
+    }
+  };
+
+  const handleSharePage = async () => {
+    const outcome = await shareBrandPage({
+      title: 'BY MARCOS — THE RED FRAME COLLECTIVE',
+      text: 'Photography, editorial portraiture, and visual direction by BY MARCOS.',
+      url: canonicalUrl,
+    });
+
+    if (outcome === 'shared') {
+      showToast('PAGE SHARED');
+    } else if (outcome === 'copied') {
+      setCopied(true);
+      showToast('URL COPIED TO CLIPBOARD');
+      setTimeout(() => setCopied(false), 2000);
+    } else if (outcome === 'failed' || outcome === 'unavailable') {
+      showToast('SHARE UNAVAILABLE — USE COPY OR QR');
+    }
+  };
+
+  const handleSaveContact = () => {
+    if (!showSaveContact) return;
+    const ok = downloadBrandVCard(contactInput);
+    if (ok) {
+      showToast('CONTACT CARD (.VCF) DOWNLOADED');
+    } else {
+      showToast('UNABLE TO EXPORT CONTACT FILE');
+    }
   };
 
   const handleDownloadSvg = async () => {
@@ -509,7 +562,7 @@ export const ByMarcosPage: React.FC = () => {
             </a>
           </div>
 
-          {/* Secondary Channel: Facebook (and conditional standalone website if provided) */}
+          {/* Secondary Channel & Direct Utility Actions */}
           <div className="mt-6 pt-6 border-t border-[#292929]/70 flex flex-wrap items-center justify-between gap-4">
             <div className="flex flex-wrap items-center gap-6">
               <span className="text-[11px] font-mono-custom tracking-[0.2em] text-[#9E9990] uppercase">
@@ -538,6 +591,31 @@ export const ByMarcosPage: React.FC = () => {
                   <ArrowUpRight className="w-3.5 h-3.5 text-[#C4636D] transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </a>
               )}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              {showSaveContact && (
+                <button
+                  type="button"
+                  onClick={handleSaveContact}
+                  title="Download a vCard (.vcf) file to import BY MARCOS into your Contacts"
+                  aria-label="Save BY MARCOS Contact (.vcf)"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#191919] hover:bg-[#222222] border border-[#292929] hover:border-[#78343B] text-[11px] font-mono-custom tracking-[0.16em] text-[#F4F0EA] uppercase transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#78343B]"
+                >
+                  <UserPlus className="w-3.5 h-3.5 text-[#C4636D]" />
+                  <span>Save Contact (.vcf)</span>
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={handleSharePage}
+                aria-label="Share BY MARCOS page"
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#191919] hover:bg-[#222222] border border-[#292929] hover:border-[#78343B] text-[11px] font-mono-custom tracking-[0.16em] text-[#D8D3CA] hover:text-[#F4F0EA] uppercase transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#78343B]"
+              >
+                <Share2 className="w-3.5 h-3.5 text-[#C4636D]" />
+                <span>Share</span>
+              </button>
             </div>
           </div>
         </motion.section>
@@ -604,6 +682,7 @@ export const ByMarcosPage: React.FC = () => {
               <ViewfinderCorners sizeClass="w-3 h-3" tone="oxblood" />
 
               <button
+                ref={closeQrButtonRef}
                 type="button"
                 onClick={() => setIsQrOpen(false)}
                 className="absolute top-4 right-4 p-2 text-[#9E9990] hover:text-[#F4F0EA] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#78343B]"
@@ -642,23 +721,34 @@ export const ByMarcosPage: React.FC = () => {
                 {canonicalUrl}
               </p>
 
-              <button
-                type="button"
-                onClick={handleCopyUrl}
-                className="w-full flex items-center justify-center gap-2 py-3 bg-[#191919] hover:bg-[#222222] border border-[#292929] hover:border-[#78343B] text-xs font-mono-custom tracking-wider text-[#F4F0EA] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#78343B]"
-              >
-                {copied ? (
-                  <>
-                    <Check className="w-4 h-4 text-[#C4636D]" />
-                    <span>URL Copied</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-4 h-4 text-[#9E9990]" />
-                    <span>Copy Canonical URL</span>
-                  </>
-                )}
-              </button>
+              <div className="w-full grid grid-cols-2 gap-2.5">
+                <button
+                  type="button"
+                  onClick={handleCopyUrl}
+                  className="flex items-center justify-center gap-1.5 py-3 px-2 bg-[#191919] hover:bg-[#222222] border border-[#292929] hover:border-[#78343B] text-[11px] font-mono-custom tracking-wider text-[#F4F0EA] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#78343B]"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-[#C4636D] shrink-0" />
+                      <span>Copied</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5 text-[#9E9990] shrink-0" />
+                      <span>Copy URL</span>
+                    </>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleSharePage}
+                  className="flex items-center justify-center gap-1.5 py-3 px-2 bg-[#191919] hover:bg-[#222222] border border-[#292929] hover:border-[#78343B] text-[11px] font-mono-custom tracking-wider text-[#F4F0EA] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#78343B]"
+                >
+                  <Share2 className="w-3.5 h-3.5 text-[#C4636D] shrink-0" />
+                  <span>Share Page</span>
+                </button>
+              </div>
 
               <div className="w-full grid grid-cols-2 gap-2.5 mt-2.5">
                 <button
@@ -678,6 +768,22 @@ export const ByMarcosPage: React.FC = () => {
                   <span>Export PNG (1024px)</span>
                 </button>
               </div>
+
+              {showSaveContact && (
+                <div className="w-full mt-3 pt-3 border-t border-[#292929]">
+                  <button
+                    type="button"
+                    onClick={handleSaveContact}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#191919] hover:bg-[#222222] border border-[#292929] hover:border-[#78343B] text-[11px] font-mono-custom tracking-wider text-[#F4F0EA] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#78343B]"
+                  >
+                    <UserPlus className="w-3.5 h-3.5 text-[#C4636D]" />
+                    <span>Save Contact (.vcf)</span>
+                  </button>
+                  <p className="mt-1.5 text-[10px] text-[#8B867E]">
+                    Downloads a contact file to import into your phone.
+                  </p>
+                </div>
+              )}
             </motion.div>
           </div>
         )}
