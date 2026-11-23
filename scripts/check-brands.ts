@@ -375,11 +375,14 @@ function verifyPrerenderedDist(projectRoot: string): void {
       canonicalUrl: `${OFFICIAL_SITE_URL}/bymarcos`,
       requiredH1Text: 'BY MARCOS',
       requiredBodySnippets: [
-        'THE RED FRAME COLLECTIVE',
         'EVERY FRAME HAS A STORY.',
+        'EVERY STORY HAS A FEELING.',
+        'PHOTOGRAPHY',
+        'PORTRAITS & PERSONAL SESSIONS',
         'Save Contact (.vcf)',
         'ALEXANDRIA',
       ],
+      forbiddenBodySnippets: ['BM — 001'],
       expectedSchemaTypes: ['LocalBusiness'],
     },
   ];

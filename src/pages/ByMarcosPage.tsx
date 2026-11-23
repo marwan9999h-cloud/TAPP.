@@ -26,38 +26,7 @@ import {
   getByMarcosWebsiteUrl,
 } from '../data/byMarcosData';
 
-const CINEMATIC_EASE = [0.16, 1, 0.3, 1] as const;
-
-/**
- * Minimal viewfinder corner tick motif — pure geometric framing marks,
- * never functioning as a standalone logo.
- */
-const ViewfinderCorners: React.FC<{ sizeClass?: string; tone?: 'oxblood' | 'graphite' }> = ({
-  sizeClass = 'w-4 h-4',
-  tone = 'oxblood',
-}) => {
-  const borderColor = tone === 'oxblood' ? 'border-[#78343B]' : 'border-[#292929]';
-  return (
-    <>
-      <span
-        aria-hidden="true"
-        className={`pointer-events-none absolute top-0 left-0 ${sizeClass} border-t border-l ${borderColor}`}
-      />
-      <span
-        aria-hidden="true"
-        className={`pointer-events-none absolute top-0 right-0 ${sizeClass} border-t border-r ${borderColor}`}
-      />
-      <span
-        aria-hidden="true"
-        className={`pointer-events-none absolute bottom-0 left-0 ${sizeClass} border-b border-l ${borderColor}`}
-      />
-      <span
-        aria-hidden="true"
-        className={`pointer-events-none absolute bottom-0 right-0 ${sizeClass} border-b border-r ${borderColor}`}
-      />
-    </>
-  );
-};
+const MODAL_EASE = [0.16, 1, 0.3, 1] as const;
 
 export const ByMarcosPage: React.FC = () => {
   const shouldReduceMotion = useReducedMotion();
@@ -67,7 +36,6 @@ export const ByMarcosPage: React.FC = () => {
   const [copied, setCopied] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Enforce consistent English metadata & LTR layout on BY MARCOS
   useDocumentMeta({
     title: BRAND_SEO.bymarcos.title,
     description: BRAND_SEO.bymarcos.description,
@@ -109,7 +77,7 @@ export const ByMarcosPage: React.FC = () => {
     import('../utils/qr')
       .then(({ generateBrandQrSvg }) =>
         generateBrandQrSvg(canonicalUrl, {
-          darkColor: '#101010',
+          darkColor: '#111110',
           lightColor: '#FFFFFF',
           margin: 3,
           errorCorrectionLevel: 'M',
@@ -154,7 +122,7 @@ export const ByMarcosPage: React.FC = () => {
 
   const handleSharePage = async () => {
     const outcome = await shareBrandPage({
-      title: 'BY MARCOS — THE RED FRAME COLLECTIVE',
+      title: 'BY MARCOS',
       text: 'Photography, editorial portraiture, and visual direction by BY MARCOS.',
       url: canonicalUrl,
     });
@@ -189,7 +157,7 @@ export const ByMarcosPage: React.FC = () => {
     try {
       const { downloadBrandQrSvg } = await import('../utils/qr');
       await downloadBrandQrSvg(canonicalUrl, 'bymarcos', {
-        darkColor: '#101010',
+        darkColor: '#111110',
         lightColor: '#FFFFFF',
         margin: 3,
       });
@@ -204,7 +172,7 @@ export const ByMarcosPage: React.FC = () => {
       const { downloadBrandQrPng } = await import('../utils/qr');
       await downloadBrandQrPng(canonicalUrl, 'bymarcos', {
         size: 1024,
-        darkColor: '#101010',
+        darkColor: '#111110',
         lightColor: '#FFFFFF',
         margin: 3,
       });
@@ -214,373 +182,201 @@ export const ByMarcosPage: React.FC = () => {
     }
   };
 
-  const sectionRevealProps = shouldReduceMotion
-    ? {}
-    : {
-        initial: { opacity: 0, y: 18 },
-        whileInView: { opacity: 1, y: 0 },
-        viewport: { once: true, amount: 0.15 },
-        transition: { duration: 0.65, ease: CINEMATIC_EASE },
-      };
-
   return (
     <div
       dir="ltr"
       lang="en"
-      className="min-h-screen bg-[#101010] text-[#F4F0EA] relative flex flex-col justify-between antialiased font-body selection:bg-[#78343B] selection:text-[#F4F0EA]"
+      className="min-h-screen bg-[#0A0A09] text-[#F4F0EA] relative flex flex-col items-center justify-center antialiased font-body selection:bg-[#9E3039] selection:text-[#F4F0EA] sm:py-10 sm:px-6"
     >
-      {/* Subtle analog film grain overlay */}
+      {/* Subtle darkroom film grain */}
       <div
         aria-hidden="true"
-        className="fixed inset-0 film-grain opacity-30 pointer-events-none z-30"
+        className="fixed inset-0 film-grain opacity-20 pointer-events-none z-30"
       />
 
-      {/* Top Navigation Bar */}
-      <header className="w-full border-b border-[#292929] bg-[#101010]/95 relative z-20">
-        <div className="max-w-5xl mx-auto px-5 sm:px-8 lg:px-10 h-16 flex items-center justify-between gap-6">
-          {/* Zone 1: Wordmark */}
-          <a
-            href="#signature"
-            className="font-serif-custom text-xl font-semibold tracking-tight text-[#F4F0EA] whitespace-nowrap shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#78343B]"
+      {/* Unified Editorial Sheet */}
+      <div className="w-full max-w-[520px] mx-auto relative z-10 flex-1 sm:flex-initial flex flex-col bg-[#111110] sm:border sm:border-[#232220] sm:shadow-[0_28px_80px_-24px_rgba(0,0,0,0.85)]">
+        <main className="flex-1 flex flex-col">
+          {/* ─── BAND 1: EDITORIAL MONUMENTAL IDENTITY & FRAMED STATEMENT ─── */}
+          <header
+            aria-labelledby="bymarcos-title"
+            className="bg-[#111110] px-6 sm:px-9 pt-7 sm:pt-9 pb-8 sm:pb-10"
           >
-            BY MARCOS
-          </a>
+            {/* Masthead Location Line */}
+            <div className="flex items-center gap-3.5 text-[11px] font-mono-custom tracking-[0.2em] text-[#9E988E] uppercase mb-7 sm:mb-8">
+              <span>{BY_MARCOS_EXTERNAL_CONFIG.locationDetail}</span>
+              <span aria-hidden="true" className="h-px flex-1 bg-[#262523]" />
+            </div>
 
-          {/* Zone 2: Minimal Section Anchors */}
-          <nav
-            aria-label="Page sections"
-            className="hidden md:flex items-center gap-7 text-xs font-mono-custom tracking-[0.18em] text-[#9E9990] uppercase"
+            {/* Full-Width Display Wordmark */}
+            <h1
+              id="bymarcos-title"
+              className="font-serif-custom text-[#F4F0EA] tracking-tight"
+            >
+              <span className="block text-[11px] sm:text-xs font-mono-custom font-normal tracking-[0.34em] text-[#E07E87] uppercase mb-2">
+                BY
+              </span>
+              <span className="block text-[clamp(3.45rem,17.8vw,5.75rem)] font-semibold leading-[0.84] tracking-[-0.025em] -ml-[2px]">
+                MARCOS
+              </span>
+            </h1>
+
+            {/* Signature Architectural Red Frame Anchoring the Editorial Statement */}
+            <div className="mt-7 sm:mt-8 relative border border-[#9E353F] px-5 sm:px-6 py-5 sm:py-6">
+              {/* Quiet optical corner ticks for darkroom print poise */}
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute -top-px -left-px w-2.5 h-2.5 border-t-2 border-l-2 border-[#D4626D]"
+              />
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute -bottom-px -right-px w-2.5 h-2.5 border-b-2 border-r-2 border-[#D4626D]"
+              />
+
+              <p className="font-serif-custom text-[1.32rem] sm:text-[1.52rem] font-normal leading-[1.28] text-[#F4F0EA]">
+                EVERY FRAME HAS A STORY.
+                <span className="block italic text-[#D5CFC4] mt-1">
+                  EVERY STORY HAS A FEELING.
+                </span>
+              </p>
+            </div>
+          </header>
+
+          {/* ─── BAND 2: WARM ARCHIVAL IVORY SERVICES INDEX & STUDIO COLOPHON ─── */}
+          <section
+            aria-labelledby="practice-heading"
+            className="bg-[#EFECE4] text-[#141413] px-6 sm:px-9 py-8 sm:py-9 border-t-2 border-[#9E353F]"
           >
-            <a
-              href="#statement"
-              className="hover:text-[#F4F0EA] transition-colors whitespace-nowrap shrink-0 focus:outline-none focus-visible:text-[#F4F0EA] focus-visible:underline"
-            >
-              Statement
-            </a>
-            <a
-              href="#practice"
-              className="hover:text-[#F4F0EA] transition-colors whitespace-nowrap shrink-0 focus:outline-none focus-visible:text-[#F4F0EA] focus-visible:underline"
-            >
-              Practice
-            </a>
-            <a
-              href="#presence"
-              className="hover:text-[#F4F0EA] transition-colors whitespace-nowrap shrink-0 focus:outline-none focus-visible:text-[#F4F0EA] focus-visible:underline"
-            >
-              Presence
-            </a>
-            <a
-              href="#connection"
-              className="hover:text-[#F4F0EA] transition-colors whitespace-nowrap shrink-0 focus:outline-none focus-visible:text-[#F4F0EA] focus-visible:underline"
-            >
-              Connect
-            </a>
-          </nav>
-
-          {/* Zone 3: Single Primary Utility Control (QR Digital Card Modal) */}
-          <div className="flex items-center shrink-0">
-            <button
-              type="button"
-              onClick={() => setIsQrOpen(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#191919] hover:bg-[#222222] active:bg-[#292929] border border-[#292929] hover:border-[#78343B] text-[11px] font-mono-custom tracking-[0.2em] text-[#F4F0EA] uppercase transition-colors cursor-pointer whitespace-nowrap shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#78343B]"
-              aria-label="Open BY MARCOS QR Code"
-            >
-              <QrCode className="w-3.5 h-3.5 text-[#78343B]" />
-              <span>QR</span>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Editorial Canvas */}
-      <main className="w-full max-w-5xl mx-auto px-5 sm:px-8 lg:px-10 relative z-10 flex-1">
-        {/* ─── SECTION 01 — THE SIGNATURE ─── */}
-        <section
-          id="signature"
-          className="pt-16 pb-20 sm:pt-24 sm:pb-28 lg:pt-32 lg:pb-36"
-        >
-          <div className="relative py-10 px-4 sm:py-14 sm:px-10 border border-[#292929]/70">
-            <ViewfinderCorners sizeClass="w-4 h-4 sm:w-5 sm:h-5" tone="oxblood" />
-
-            {/* Unboxed metadata index */}
-            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 pb-8 sm:pb-12 border-b border-[#292929] text-[11px] font-mono-custom tracking-[0.2em] uppercase">
-              <div className="flex items-center gap-2.5 text-[#9E9990]">
-                <span className="text-[#C4636D] font-semibold">01</span>
-                <span aria-hidden="true" className="text-[#59554F]">·</span>
-                <span>INDEPENDENT CREATIVE STUDIO</span>
-              </div>
-              <span className="text-[#9E9990]">
-                {BY_MARCOS_EXTERNAL_CONFIG.locationDetail}
+            <div className="flex items-baseline justify-between gap-3 pb-3 border-b border-[#141413]/25">
+              <h2
+                id="practice-heading"
+                className="text-xs font-mono-custom font-bold tracking-[0.2em] uppercase text-[#141413]"
+              >
+                SERVICES
+              </h2>
+              <span className="text-[11px] font-mono-custom tracking-[0.16em] text-[#8C2D36] font-bold uppercase tabular-nums">
+                01 — 06
               </span>
             </div>
 
-            {/* Dominant Existing Wordmark */}
-            <div className="pt-10 pb-6 sm:pt-14 sm:pb-8">
-              <div className="overflow-hidden">
-                <m.h1
-                  initial={shouldReduceMotion ? false : { y: '100%', opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.7, ease: CINEMATIC_EASE }}
-                  className="font-serif-custom text-[clamp(2.5rem,10.5vw,7.25rem)] font-semibold tracking-tight text-[#F4F0EA] leading-[0.92] text-left"
-                >
-                  BY MARCOS
-                </m.h1>
-              </div>
-
-              <div className="mt-6 sm:mt-8 flex items-center gap-4">
-                <span
-                  aria-hidden="true"
-                  className="h-px w-8 sm:w-12 bg-[#78343B] shrink-0"
-                />
-                <div className="overflow-hidden">
-                  <m.p
-                    initial={shouldReduceMotion ? false : { y: '100%', opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 0.65, delay: 0.1, ease: CINEMATIC_EASE }}
-                    className="font-mono-custom text-xs sm:text-sm tracking-[0.26em] text-[#D8D3CA] uppercase"
+            {/* 2-Column Numbered Editorial Index (clean row dividers, zero double bottom rule) */}
+            <ol className="grid grid-cols-2 gap-x-5 sm:gap-x-8">
+              {BY_MARCOS_SERVICES.map((service, index) => {
+                const isLastRow = index >= BY_MARCOS_SERVICES.length - 2;
+                return (
+                  <li
+                    key={service.number}
+                    className={`py-4 flex flex-col justify-start ${
+                      isLastRow ? '' : 'border-b border-[#141413]/15'
+                    }`}
                   >
-                    THE RED FRAME COLLECTIVE
-                  </m.p>
+                    <span className="font-mono-custom text-[11px] font-bold tracking-[0.16em] text-[#8C2D36] tabular-nums mb-1.5">
+                      {service.number}
+                    </span>
+                    <span className="font-serif-custom text-[15px] sm:text-[17px] font-semibold tracking-[0.01em] text-[#141413] leading-[1.24]">
+                      {service.name}
+                    </span>
+                  </li>
+                );
+              })}
+            </ol>
+
+            {/* Studio Location Colophon */}
+            <div className="mt-2 pt-5 border-t border-[#141413]/25">
+              <span className="block text-[11px] font-mono-custom font-bold tracking-[0.18em] text-[#8C2D36] uppercase mb-1.5">
+                STUDIO ADDRESS
+              </span>
+              <address className="not-italic text-xs sm:text-[13px] font-body font-medium tracking-[0.02em] text-[#2B2926] leading-[1.6]">
+                {BY_MARCOS_EXTERNAL_CONFIG.studioAddress}
+              </address>
+
+              {locationMapUrl && (
+                <div className="mt-3">
+                  <a
+                    href={locationMapUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 py-1.5 text-xs font-mono-custom font-bold tracking-[0.14em] text-[#8C2D36] hover:text-[#141413] uppercase transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8C2D36]"
+                  >
+                    <span>Open Location Map</span>
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  </a>
                 </div>
-              </div>
+              )}
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* ─── SECTION 02 — THE STATEMENT ─── */}
-        <m.section
-          id="statement"
-          aria-labelledby="statement-heading"
-          {...sectionRevealProps}
-          className="py-16 sm:py-24 lg:py-28 border-t border-[#292929]"
-        >
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
-            <div className="lg:col-span-3 flex items-center gap-3 text-[11px] font-mono-custom tracking-[0.22em] uppercase">
-              <span className="text-[#C4636D] font-semibold">02</span>
-              <span aria-hidden="true" className="text-[#59554F]">—</span>
-              <span className="text-[#9E9990]">THE STATEMENT</span>
-            </div>
-
-            <div className="lg:col-span-9">
+          {/* ─── BAND 3: REFINED DARK CHARCOAL CONTACT DIRECTORY & UTILITIES ─── */}
+          <section
+            aria-labelledby="connection-heading"
+            className="bg-[#111110] text-[#F4F0EA] px-6 sm:px-9 pt-8 pb-7"
+          >
+            <div className="flex items-baseline justify-between gap-2 pb-3 border-b border-[#252422] mb-5">
               <h2
-                id="statement-heading"
-                className="font-serif-custom text-[clamp(2.25rem,5.4vw,4.5rem)] font-normal leading-[1.06] tracking-tight text-[#F4F0EA] max-w-3xl"
+                id="connection-heading"
+                className="text-xs font-mono-custom font-bold tracking-[0.2em] uppercase text-[#E07E87]"
               >
-                <span className="block overflow-hidden">
-                  <m.span
-                    className="block"
-                    initial={shouldReduceMotion ? false : { y: '100%', opacity: 0 }}
-                    whileInView={{ y: 0, opacity: 1 }}
-                    viewport={{ once: true, amount: 0.3 }}
-                    transition={{ duration: 0.65, ease: CINEMATIC_EASE }}
-                  >
-                    EVERY FRAME HAS A STORY.
-                  </m.span>
-                </span>
-                <span className="block overflow-hidden mt-2 sm:mt-3">
-                  <m.span
-                    className="block italic text-[#D9D3C9]"
-                    initial={shouldReduceMotion ? false : { y: '100%', opacity: 0 }}
-                    whileInView={{ y: 0, opacity: 1 }}
-                    viewport={{ once: true, amount: 0.3 }}
-                    transition={{ duration: 0.65, delay: 0.1, ease: CINEMATIC_EASE }}
-                  >
-                    EVERY STORY HAS A FEELING.
-                  </m.span>
-                </span>
+                CONNECT
               </h2>
-              <div
-                aria-hidden="true"
-                className="mt-8 sm:mt-10 h-px w-20 bg-[#78343B]"
-              />
-            </div>
-          </div>
-        </m.section>
-
-        {/* ─── SECTION 03 — THE CREATIVE PRACTICE ─── */}
-        <m.section
-          id="practice"
-          aria-labelledby="practice-heading"
-          {...sectionRevealProps}
-          className="py-16 sm:py-24 lg:py-28 border-t border-[#292929]"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-4 pb-8 border-b border-[#292929]">
-            <div className="flex items-center gap-3 text-[11px] font-mono-custom tracking-[0.22em] uppercase">
-              <span className="text-[#C4636D] font-semibold">03</span>
-              <span aria-hidden="true" className="text-[#59554F]">—</span>
-              <h2 id="practice-heading" className="text-[#F4F0EA]">
-                THE CREATIVE PRACTICE
-              </h2>
-            </div>
-            <span className="text-[11px] font-mono-custom tracking-[0.2em] text-[#9E9990] uppercase">
-              SERVICES INDEX
-            </span>
-          </div>
-
-          <ol className="divide-y divide-[#292929]">
-            {BY_MARCOS_SERVICES.map((service, index) => (
-              <m.li
-                key={service.number}
-                initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.2 }}
-                transition={{
-                  duration: 0.45,
-                  delay: shouldReduceMotion ? 0 : index * 0.04,
-                  ease: CINEMATIC_EASE,
-                }}
-              >
-                <a
-                  href="#connection"
-                  className="group relative flex items-baseline gap-4 sm:gap-8 py-6 sm:py-8 px-2 sm:px-4 transition-colors duration-200 hover:bg-[#191919] focus-visible:bg-[#191919] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#78343B]"
-                >
-                  <span className="font-mono-custom text-xs sm:text-sm tracking-[0.2em] text-[#9E9990] group-hover:text-[#C96973] group-focus-visible:text-[#C96973] tabular-nums shrink-0 transition-colors duration-200">
-                    {service.number} <span aria-hidden="true">—</span>
-                  </span>
-                  <span className="font-serif-custom text-xl sm:text-3xl lg:text-[2.65rem] font-normal tracking-tight text-[#F4F0EA] leading-tight transition-transform duration-200 md:group-hover:translate-x-2 md:group-focus-visible:translate-x-2">
-                    {service.name}
-                  </span>
-                </a>
-              </m.li>
-            ))}
-          </ol>
-        </m.section>
-
-        {/* ─── SECTION 04 — THE PRESENCE ─── */}
-        <m.section
-          id="presence"
-          aria-labelledby="presence-heading"
-          {...sectionRevealProps}
-          className="py-16 sm:py-24 border-t border-[#292929]"
-        >
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
-            <div className="lg:col-span-3 flex items-center gap-3 text-[11px] font-mono-custom tracking-[0.22em] uppercase">
-              <span className="text-[#C4636D] font-semibold">04</span>
-              <span aria-hidden="true" className="text-[#59554F]">—</span>
-              <h2 id="presence-heading" className="text-[#9E9990]">
-                THE PRESENCE
-              </h2>
+              <span className="text-xs text-[#9E988E]">
+                Direct booking &amp; links
+              </span>
             </div>
 
-            <div className="lg:col-span-9">
-              <div className="relative p-6 sm:p-8 bg-[#191919]/50 border border-[#292929]">
-                <ViewfinderCorners sizeClass="w-3 h-3" tone="oxblood" />
-                <span className="block text-[11px] font-mono-custom tracking-[0.22em] text-[#9E9990] uppercase mb-4">
-                  STUDIO ADDRESS
-                </span>
-                <address className="not-italic font-serif-custom text-2xl sm:text-3xl lg:text-[2rem] font-normal text-[#F4F0EA] leading-snug tracking-tight max-w-2xl">
-                  {BY_MARCOS_EXTERNAL_CONFIG.studioAddress}
-                </address>
-
-                {locationMapUrl && (
-                  <div className="mt-6 pt-5 border-t border-[#292929]">
-                    <a
-                      href={locationMapUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-xs font-mono-custom tracking-[0.2em] text-[#F4F0EA] hover:text-[#C4636D] uppercase transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#78343B]"
-                    >
-                      <span>Open Location Map</span>
-                      <ArrowUpRight className="w-3.5 h-3.5 text-[#78343B]" />
-                    </a>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </m.section>
-
-        {/* ─── SECTION 05 — THE CONNECTION ─── */}
-        <m.section
-          id="connection"
-          aria-labelledby="connection-heading"
-          {...sectionRevealProps}
-          className="py-16 sm:py-24 lg:py-28 border-t border-[#292929]"
-        >
-          <div className="flex items-center gap-3 text-[11px] font-mono-custom tracking-[0.22em] uppercase mb-8">
-            <span className="text-[#C4636D] font-semibold">05</span>
-            <span aria-hidden="true" className="text-[#59554F]">—</span>
-            <span className="text-[#9E9990]">THE CONNECTION</span>
-          </div>
-
-          <div className="max-w-3xl mb-12 sm:mb-14">
-            <h2
-              id="connection-heading"
-              className="font-serif-custom text-[clamp(2.2rem,5.2vw,4rem)] font-normal leading-[1.06] tracking-tight text-[#F4F0EA]"
-            >
-              LET&apos;S CREATE SOMETHING MEANINGFUL.
-            </h2>
-            <p className="mt-4 text-base sm:text-lg text-[#9E9990] leading-relaxed">
-              Have a project in mind? Let&apos;s start a conversation.
-            </p>
-          </div>
-
-          {/* Primary Equal-Weight Contact Channels: WhatsApp & Instagram */}
-          <div className="grid grid-cols-1 md:grid-cols-2 border border-[#292929] divide-y md:divide-y-0 md:divide-x divide-[#292929]">
-            {/* WhatsApp — Direct Inquiries & Booking */}
+            {/* Single Dominant Primary Action: WhatsApp Booking */}
             <a
               href={bookingUrl}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Contact BY MARCOS on WhatsApp for direct inquiries and booking"
-              className="group relative flex items-center justify-between gap-4 p-6 sm:p-8 bg-[#101010] hover:bg-[#191919] active:bg-[#191919] transition-colors duration-200 focus:outline-none focus-visible:bg-[#191919] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#78343B]"
+              className="group flex items-center justify-between gap-4 w-full min-h-[72px] px-5 py-4 bg-[#191213] hover:bg-[#221618] active:bg-[#291A1D] border border-[#9E353F] hover:border-[#C95C66] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E07E87]"
             >
               <div className="min-w-0">
-                <span className="block text-[11px] font-mono-custom tracking-[0.22em] text-[#C4636D] uppercase mb-2">
+                <span className="block text-[11px] font-mono-custom tracking-[0.16em] text-[#E07E87] uppercase">
                   DIRECT INQUIRIES &amp; BOOKING
                 </span>
-                <span className="font-serif-custom text-3xl sm:text-4xl font-normal text-[#F4F0EA] tracking-tight block">
+                <span className="font-serif-custom text-[1.75rem] sm:text-[1.9rem] font-semibold text-[#F4F0EA] tracking-tight block leading-none mt-1.5">
                   WhatsApp
                 </span>
-                <span className="block mt-2 text-xs text-[#9E9990] group-hover:text-[#D8D3CA] transition-colors">
+                <span className="block text-[13px] text-[#C5BFB5] mt-1.5">
                   Start a direct conversation
                 </span>
               </div>
-              <span className="w-11 h-11 border border-[#292929] group-hover:border-[#78343B] flex items-center justify-center shrink-0 transition-colors">
-                <ArrowUpRight className="w-4 h-4 text-[#F4F0EA] transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-              </span>
+              <ArrowUpRight className="w-5 h-5 text-[#E07E87] group-hover:text-[#F4F0EA] shrink-0 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </a>
 
-            {/* Instagram — Official Handle */}
-            <a
-              href={BY_MARCOS_EXTERNAL_CONFIG.instagramUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Follow BY MARCOS on Instagram (@bymarrcos)"
-              className="group relative flex items-center justify-between gap-4 p-6 sm:p-8 bg-[#101010] hover:bg-[#191919] active:bg-[#191919] transition-colors duration-200 focus:outline-none focus-visible:bg-[#191919] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#78343B]"
-            >
-              <div className="min-w-0">
-                <span className="block text-[11px] font-mono-custom tracking-[0.22em] text-[#C4636D] uppercase mb-2">
-                  VISUAL ARCHIVE &amp; UPDATES
-                </span>
-                <span className="font-serif-custom text-3xl sm:text-4xl font-normal text-[#F4F0EA] tracking-tight block">
+            {/* Editorial Directory Rows: Instagram, Facebook, & Conditional Portfolio Website */}
+            <div className="mt-5 border-t border-b border-[#252422] divide-y divide-[#252422]">
+              <a
+                href={BY_MARCOS_EXTERNAL_CONFIG.instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Follow BY MARCOS on Instagram (@bymarrcos)"
+                className="group flex items-center justify-between gap-3 min-h-[56px] py-3.5 hover:bg-[#161614] px-1 -mx-1 transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#9E353F]"
+              >
+                <span className="font-serif-custom text-[1.35rem] font-semibold text-[#F4F0EA] leading-tight">
                   Instagram
                 </span>
-                <span className="block mt-2 text-xs font-mono-custom tracking-wider text-[#9E9990] group-hover:text-[#D8D3CA] transition-colors">
-                  {BY_MARCOS_EXTERNAL_CONFIG.instagramHandle}
+                <span className="inline-flex items-center gap-2.5 text-xs font-mono-custom tracking-wide text-[#B8B2A8] group-hover:text-[#F4F0EA] transition-colors">
+                  <span>{BY_MARCOS_EXTERNAL_CONFIG.instagramHandle}</span>
+                  <ArrowUpRight className="w-4 h-4 text-[#E07E87] shrink-0 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </span>
-              </div>
-              <span className="w-11 h-11 border border-[#292929] group-hover:border-[#78343B] flex items-center justify-center shrink-0 transition-colors">
-                <ArrowUpRight className="w-4 h-4 text-[#F4F0EA] transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-              </span>
-            </a>
-          </div>
+              </a>
 
-          {/* Secondary Channel & Direct Utility Actions */}
-          <div className="mt-6 pt-6 border-t border-[#292929]/70 flex flex-wrap items-center justify-between gap-4">
-            <div className="flex flex-wrap items-center gap-6">
-              <span className="text-[11px] font-mono-custom tracking-[0.2em] text-[#9E9990] uppercase">
-                Additional Social
-              </span>
               <a
                 href={BY_MARCOS_EXTERNAL_CONFIG.facebookUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Visit BY MARCOS on Facebook"
-                className="group inline-flex items-center gap-1.5 py-2 text-sm text-[#D8D3CA] hover:text-[#F4F0EA] border-b border-[#292929] hover:border-[#78343B] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#78343B]"
+                className="group flex items-center justify-between gap-3 min-h-[56px] py-3.5 hover:bg-[#161614] px-1 -mx-1 transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#9E353F]"
               >
-                <span>Facebook</span>
-                <ArrowUpRight className="w-3.5 h-3.5 text-[#C4636D] transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                <span className="font-serif-custom text-[1.35rem] font-semibold text-[#F4F0EA] leading-tight">
+                  Facebook
+                </span>
+                <span className="inline-flex items-center gap-2.5 text-xs font-mono-custom tracking-wide text-[#B8B2A8] group-hover:text-[#F4F0EA] transition-colors">
+                  <span>Official Page</span>
+                  <ArrowUpRight className="w-4 h-4 text-[#E07E87] shrink-0 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </span>
               </a>
 
               {websiteUrl && (
@@ -589,75 +385,83 @@ export const ByMarcosPage: React.FC = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Visit BY MARCOS standalone portfolio website"
-                  className="group inline-flex items-center gap-1.5 py-2 text-sm text-[#D8D3CA] hover:text-[#F4F0EA] border-b border-[#292929] hover:border-[#78343B] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#78343B]"
+                  className="group flex items-center justify-between gap-3 min-h-[56px] py-3.5 hover:bg-[#161614] px-1 -mx-1 transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#9E353F]"
                 >
-                  <span>Portfolio Website</span>
-                  <ArrowUpRight className="w-3.5 h-3.5 text-[#C4636D] transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  <span className="font-serif-custom text-[1.35rem] font-semibold text-[#F4F0EA] leading-tight">
+                    Portfolio
+                  </span>
+                  <span className="inline-flex items-center gap-2.5 text-xs font-mono-custom tracking-wide text-[#B8B2A8] group-hover:text-[#F4F0EA] transition-colors">
+                    <span>Website</span>
+                    <ArrowUpRight className="w-4 h-4 text-[#E07E87] shrink-0 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  </span>
                 </a>
               )}
             </div>
 
-            <div className="flex flex-wrap items-center gap-3">
+            {/* Unified Touch Utility Module: Save Contact (.vcf), Share, QR Code */}
+            <div className="mt-5 border border-[#272624] bg-[#151513] divide-y divide-[#272624]">
               {showSaveContact && (
                 <button
                   type="button"
                   onClick={handleSaveContact}
                   title="Download a vCard (.vcf) file to import BY MARCOS into your Contacts"
                   aria-label="Save BY MARCOS Contact (.vcf)"
-                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#191919] hover:bg-[#222222] border border-[#292929] hover:border-[#78343B] text-[11px] font-mono-custom tracking-[0.16em] text-[#F4F0EA] uppercase transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#78343B]"
+                  className="w-full min-h-[50px] inline-flex items-center justify-center gap-2.5 px-4 py-3 hover:bg-[#1D1C19] active:bg-[#242320] text-xs font-mono-custom font-bold tracking-[0.14em] text-[#F4F0EA] uppercase transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#E07E87]"
                 >
-                  <UserPlus className="w-3.5 h-3.5 text-[#C4636D]" />
+                  <UserPlus className="w-4 h-4 text-[#E07E87] shrink-0" />
                   <span>Save Contact (.vcf)</span>
                 </button>
               )}
 
-              <button
-                type="button"
-                onClick={handleSharePage}
-                aria-label="Share BY MARCOS page"
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#191919] hover:bg-[#222222] border border-[#292929] hover:border-[#78343B] text-[11px] font-mono-custom tracking-[0.16em] text-[#D8D3CA] hover:text-[#F4F0EA] uppercase transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#78343B]"
-              >
-                <Share2 className="w-3.5 h-3.5 text-[#C4636D]" />
-                <span>Share</span>
-              </button>
-            </div>
-          </div>
-        </m.section>
-      </main>
+              <div className="grid grid-cols-2 divide-x divide-[#272624]">
+                <button
+                  type="button"
+                  onClick={handleSharePage}
+                  aria-label="Share BY MARCOS page"
+                  className="min-h-[48px] inline-flex items-center justify-center gap-2 px-4 py-3 hover:bg-[#1D1C19] active:bg-[#242320] text-xs font-mono-custom font-bold tracking-[0.14em] text-[#D5CFC4] hover:text-[#F4F0EA] uppercase transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#E07E87]"
+                >
+                  <Share2 className="w-4 h-4 text-[#E07E87] shrink-0" />
+                  <span>Share</span>
+                </button>
 
-      {/* ─── SECTION 06 — THE SIGN-OFF ─── */}
-      <footer className="w-full border-t border-[#292929] bg-[#101010] py-12 sm:py-16 relative z-10">
-        <div className="max-w-5xl mx-auto px-5 sm:px-8 lg:px-10">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-8">
-            <div>
-              <span className="block text-[11px] font-mono-custom tracking-[0.22em] text-[#C4636D] uppercase mb-3">
-                06 — SIGN-OFF
+                <button
+                  type="button"
+                  onClick={() => setIsQrOpen(true)}
+                  aria-label="Open BY MARCOS QR Code"
+                  className="min-h-[48px] inline-flex items-center justify-center gap-2 px-4 py-3 hover:bg-[#1D1C19] active:bg-[#242320] text-xs font-mono-custom font-bold tracking-[0.14em] text-[#F4F0EA] uppercase transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#E07E87]"
+                >
+                  <QrCode className="w-4 h-4 text-[#E07E87] shrink-0" />
+                  <span>QR Code</span>
+                </button>
+              </div>
+            </div>
+          </section>
+        </main>
+
+        {/* ─── EDITORIAL FOOTER ─── */}
+        <footer className="bg-[#111110] px-6 sm:px-9 pt-5 pb-7 border-t border-[#22211F]">
+          <div className="flex items-center justify-between gap-4">
+            <p className="font-serif-custom text-lg font-semibold text-[#F4F0EA] tracking-tight leading-none whitespace-nowrap">
+              BY MARCOS
+            </p>
+
+            <button
+              type="button"
+              onClick={() => navigate(BRAND_FOOTER_CONFIG.explorePath)}
+              className="min-h-[44px] inline-flex items-center justify-center gap-1.5 py-2 text-[11px] font-mono-custom font-bold tracking-[0.14em] text-[#D5CFC4] hover:text-[#F4F0EA] uppercase transition-colors cursor-pointer whitespace-nowrap shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E07E87]"
+            >
+              <span className="border-b border-[#9E353F]/75 pb-0.5">
+                {BRAND_FOOTER_CONFIG.exploreLabel}
               </span>
-              <p className="font-serif-custom text-2xl sm:text-3xl text-[#F4F0EA] tracking-tight">
-                BY MARCOS
-              </p>
-              <p className="mt-1 text-[11px] font-mono-custom tracking-[0.22em] text-[#9E9990] uppercase">
-                BY MARCOS — THE RED FRAME COLLECTIVE
-              </p>
-            </div>
-
-            <div className="flex flex-col items-start sm:items-end gap-3">
-              <button
-                type="button"
-                onClick={() => navigate(BRAND_FOOTER_CONFIG.explorePath)}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#191919] hover:bg-[#222222] active:bg-[#292929] border border-[#292929] hover:border-[#78343B] text-xs font-mono-custom tracking-[0.2em] text-[#F4F0EA] uppercase transition-colors cursor-pointer whitespace-nowrap shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#78343B]"
-              >
-                <span>{BRAND_FOOTER_CONFIG.exploreLabel}</span>
-                <ArrowUpRight className="w-3.5 h-3.5 text-[#C4636D]" />
-              </button>
-
-              <p className="text-[11px] font-mono-custom tracking-[0.14em] text-[#8B867E]">
-                {BRAND_FOOTER_CONFIG.attributionText}
-              </p>
-            </div>
+              <ArrowUpRight className="w-3.5 h-3.5 text-[#E07E87]" />
+            </button>
           </div>
-        </div>
-      </footer>
+
+          <p className="mt-2.5 text-[11px] font-body text-[#9E988E]">
+            {BRAND_FOOTER_CONFIG.attributionText}
+          </p>
+        </footer>
+      </div>
 
       {/* ─── QR CODE & PRINT EXPORT MODAL ─── */}
       <AnimatePresence>
@@ -680,16 +484,14 @@ export const ByMarcosPage: React.FC = () => {
               initial={shouldReduceMotion ? false : { scale: 0.96, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={shouldReduceMotion ? { opacity: 0 } : { scale: 0.96, opacity: 0 }}
-              transition={{ duration: 0.18, ease: CINEMATIC_EASE }}
-              className="relative w-full max-w-sm max-h-[90vh] overflow-y-auto bg-[#101010] border border-[#292929] z-10 p-6 shadow-2xl flex flex-col items-center text-center"
+              transition={{ duration: 0.18, ease: MODAL_EASE }}
+              className="relative w-full max-w-sm max-h-[90vh] overflow-y-auto bg-[#111110] border border-[#9E353F] z-10 p-6 shadow-2xl flex flex-col items-center text-center"
             >
-              <ViewfinderCorners sizeClass="w-3 h-3" tone="oxblood" />
-
               <button
                 ref={closeQrButtonRef}
                 type="button"
                 onClick={() => setIsQrOpen(false)}
-                className="absolute top-4 right-4 p-2 text-[#9E9990] hover:text-[#F4F0EA] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#78343B]"
+                className="absolute top-3.5 right-3.5 min-w-[40px] min-h-[40px] flex items-center justify-center text-[#9E988E] hover:text-[#F4F0EA] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#9E353F]"
                 aria-label="Close QR Modal"
               >
                 <X className="w-4 h-4" />
@@ -697,17 +499,17 @@ export const ByMarcosPage: React.FC = () => {
 
               <h3
                 id="bymarcos-qr-modal-title"
-                className="font-serif-custom text-2xl text-[#F4F0EA] tracking-tight mt-1"
+                className="font-serif-custom text-2xl text-[#F4F0EA] tracking-tight mt-1 px-8"
               >
                 BY MARCOS — DIGITAL CARD
               </h3>
-              <p className="text-[10px] font-mono-custom tracking-[0.22em] text-[#C4636D] uppercase mt-1">
+              <p className="text-[10px] font-mono-custom tracking-[0.2em] text-[#E07E87] uppercase mt-1">
                 TAPP NFC &amp; SCANNABLE GATEWAY
               </p>
 
               <div className="my-5 p-3 bg-white select-none">
                 {qrError ? (
-                  <div className="w-40 h-40 flex items-center justify-center text-xs font-mono-custom text-[#101010]">
+                  <div className="w-40 h-40 flex items-center justify-center text-xs font-mono-custom text-[#111110]">
                     QR UNAVAILABLE
                   </div>
                 ) : qrSvg ? (
@@ -721,7 +523,7 @@ export const ByMarcosPage: React.FC = () => {
                 )}
               </div>
 
-              <p className="text-[11px] font-mono-custom text-[#9E9990] truncate max-w-full mb-4 px-2">
+              <p className="text-[11px] font-mono-custom text-[#9E988E] truncate max-w-full mb-4 px-2">
                 {canonicalUrl}
               </p>
 
@@ -729,16 +531,16 @@ export const ByMarcosPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleCopyUrl}
-                  className="flex items-center justify-center gap-1.5 py-3 px-2 bg-[#191919] hover:bg-[#222222] border border-[#292929] hover:border-[#78343B] text-[11px] font-mono-custom tracking-wider text-[#F4F0EA] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#78343B]"
+                  className="min-h-[44px] flex items-center justify-center gap-1.5 py-2.5 px-2 bg-[#161614] hover:bg-[#20201D] border border-[#2C2B28] hover:border-[#9E353F] text-[11px] font-mono-custom tracking-wider text-[#F4F0EA] transition-colors cursor-pointer whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-[#9E353F]"
                 >
                   {copied ? (
                     <>
-                      <Check className="w-3.5 h-3.5 text-[#C4636D] shrink-0" />
+                      <Check className="w-3.5 h-3.5 text-[#E07E87] shrink-0" />
                       <span>Copied</span>
                     </>
                   ) : (
                     <>
-                      <Copy className="w-3.5 h-3.5 text-[#9E9990] shrink-0" />
+                      <Copy className="w-3.5 h-3.5 text-[#9E988E] shrink-0" />
                       <span>Copy URL</span>
                     </>
                   )}
@@ -747,9 +549,9 @@ export const ByMarcosPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleSharePage}
-                  className="flex items-center justify-center gap-1.5 py-3 px-2 bg-[#191919] hover:bg-[#222222] border border-[#292929] hover:border-[#78343B] text-[11px] font-mono-custom tracking-wider text-[#F4F0EA] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#78343B]"
+                  className="min-h-[44px] flex items-center justify-center gap-1.5 py-2.5 px-2 bg-[#161614] hover:bg-[#20201D] border border-[#2C2B28] hover:border-[#9E353F] text-[11px] font-mono-custom tracking-wider text-[#F4F0EA] transition-colors cursor-pointer whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-[#9E353F]"
                 >
-                  <Share2 className="w-3.5 h-3.5 text-[#C4636D] shrink-0" />
+                  <Share2 className="w-3.5 h-3.5 text-[#E07E87] shrink-0" />
                   <span>Share Page</span>
                 </button>
               </div>
@@ -758,32 +560,32 @@ export const ByMarcosPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleDownloadSvg}
-                  className="flex items-center justify-center gap-1.5 py-2.5 bg-[#191919] hover:bg-[#222222] border border-[#292929] hover:border-[#78343B] text-[11px] font-mono-custom text-[#D8D3CA] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#78343B]"
+                  className="min-h-[44px] flex items-center justify-center gap-1.5 py-2.5 px-2 bg-[#161614] hover:bg-[#20201D] border border-[#2C2B28] hover:border-[#9E353F] text-[10px] sm:text-[11px] font-mono-custom text-[#D5CFC4] transition-colors cursor-pointer whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-[#9E353F]"
                 >
-                  <Download className="w-3.5 h-3.5 text-[#C4636D]" />
+                  <Download className="w-3.5 h-3.5 text-[#E07E87] shrink-0" />
                   <span>Export SVG</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleDownloadPng}
-                  className="flex items-center justify-center gap-1.5 py-2.5 bg-[#191919] hover:bg-[#222222] border border-[#292929] hover:border-[#78343B] text-[11px] font-mono-custom text-[#D8D3CA] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#78343B]"
+                  className="min-h-[44px] flex items-center justify-center gap-1.5 py-2.5 px-2 bg-[#161614] hover:bg-[#20201D] border border-[#2C2B28] hover:border-[#9E353F] text-[10px] sm:text-[11px] font-mono-custom text-[#D5CFC4] transition-colors cursor-pointer whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-[#9E353F]"
                 >
-                  <Download className="w-3.5 h-3.5 text-[#C4636D]" />
+                  <Download className="w-3.5 h-3.5 text-[#E07E87] shrink-0" />
                   <span>Export PNG (1024px)</span>
                 </button>
               </div>
 
               {showSaveContact && (
-                <div className="w-full mt-3 pt-3 border-t border-[#292929]">
+                <div className="w-full mt-3 pt-3 border-t border-[#252422]">
                   <button
                     type="button"
                     onClick={handleSaveContact}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#191919] hover:bg-[#222222] border border-[#292929] hover:border-[#78343B] text-[11px] font-mono-custom tracking-wider text-[#F4F0EA] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#78343B]"
+                    className="w-full min-h-[44px] flex items-center justify-center gap-2 py-2.5 bg-[#161614] hover:bg-[#20201D] border border-[#2C2B28] hover:border-[#9E353F] text-[11px] font-mono-custom tracking-wider text-[#F4F0EA] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#9E353F]"
                   >
-                    <UserPlus className="w-3.5 h-3.5 text-[#C4636D]" />
+                    <UserPlus className="w-3.5 h-3.5 text-[#E07E87]" />
                     <span>Save Contact (.vcf)</span>
                   </button>
-                  <p className="mt-1.5 text-[10px] text-[#8B867E]">
+                  <p className="mt-1.5 text-[10px] text-[#9E988E]">
                     Downloads a contact file to import into your phone.
                   </p>
                 </div>
@@ -800,9 +602,9 @@ export const ByMarcosPage: React.FC = () => {
             initial={shouldReduceMotion ? false : { opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 14 }}
-            className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 bg-[#191919] border border-[#78343B] text-[#F4F0EA] px-4 py-2.5 text-xs font-mono-custom tracking-wider shadow-2xl flex items-center gap-2 whitespace-nowrap"
+            className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 bg-[#161614] border border-[#9E353F] text-[#F4F0EA] px-4 py-2.5 text-xs font-mono-custom tracking-wider shadow-2xl flex items-center gap-2 whitespace-nowrap"
           >
-            <CheckCircle2 className="w-3.5 h-3.5 text-[#C4636D]" />
+            <CheckCircle2 className="w-3.5 h-3.5 text-[#E07E87]" />
             <span>{toastMessage}</span>
           </m.div>
         )}
