@@ -423,6 +423,37 @@ function verifyPrerenderedDist(projectRoot: string): void {
       }
       assert.ok(!serializedLd.includes('FAQPage'), `${relFile} must not emit FAQPage schema`);
 
+      if (spec.route === '/') {
+        const expectedVerification = 'CVOH9qQPXT-wkYSD7qkvXRfWce-WL_CaxkBQulK6JDc';
+        const verificationMatches = html.match(
+          /<meta\s+name="google-site-verification"\s+content="([^"]*)"\s*\/?>/gi
+        );
+        assert.equal(
+          verificationMatches?.length,
+          1,
+          `${relFile} must contain google-site-verification meta tag exactly once (found ${verificationMatches?.length ?? 0})`
+        );
+        assert.ok(
+          verificationMatches[0].includes(`content="${expectedVerification}"`),
+          `${relFile} google-site-verification content mismatch`
+        );
+
+        const graph = Array.isArray(parsedLd['@graph']) ? parsedLd['@graph'] : [];
+        const orgNode = graph.find(
+          (node: Record<string, unknown>) => node['@type'] === 'Organization'
+        ) as { sameAs?: string[] } | undefined;
+        assert.ok(orgNode, `${relFile} JSON-LD missing Organization node`);
+        assert.deepEqual(
+          orgNode.sameAs,
+          ['https://www.facebook.com/Tapp.eg', 'https://www.instagram.com/tapp.eg/'],
+          `${relFile} Organization.sameAs must use the clean official TAPP links`
+        );
+        assert.ok(
+          !html.includes('its.1m1') && !html.includes('1C31kMehSm'),
+          `${relFile} still contains deprecated TAPP social URL`
+        );
+      }
+
       // Full prerendered body check inside #root
       assert.ok(
         /<script\s+type="module"/i.test(html),

@@ -5,8 +5,8 @@ import { SOVI_EXTERNAL_CONFIG } from '../data/soviData';
 import { OFFICIAL_SITE_URL } from '../utils/url';
 
 const TAPP_SOCIAL_URLS = [
-  'https://www.facebook.com/share/1C31kMehSm/?mibextid=wwXIfr',
-  'https://www.instagram.com/its.1m1?stkn=MTkyb2dqcG5lbTEybw%3D%3D&utm_source=qr',
+  'https://www.facebook.com/Tapp.eg',
+  'https://www.instagram.com/tapp.eg/',
 ] as const;
 
 /**

@@ -930,7 +930,7 @@ export const HomePage: React.FC = () => {
 
           <div className="mt-6 flex items-center justify-center gap-3">
             <a
-              href="https://www.facebook.com/share/1C31kMehSm/?mibextid=wwXIfr"
+              href="https://www.facebook.com/Tapp.eg"
               target="_blank"
               rel="noopener noreferrer"
               className="w-10 h-10 rounded-full bg-white border border-[#DFDFD8] hover:border-[#121211] hover:bg-[#121211] text-[#121211] hover:text-white transition-all flex items-center justify-center shadow-2xs"
@@ -943,7 +943,7 @@ export const HomePage: React.FC = () => {
             </a>
 
             <a
-              href="https://www.instagram.com/its.1m1?stkn=MTkyb2dqcG5lbTEybw%3D%3D&utm_source=qr"
+              href="https://www.instagram.com/tapp.eg/"
               target="_blank"
               rel="noopener noreferrer"
               className="w-10 h-10 rounded-full bg-white border border-[#DFDFD8] hover:border-[#121211] hover:bg-[#121211] text-[#121211] hover:text-white transition-all flex items-center justify-center shadow-2xs"
