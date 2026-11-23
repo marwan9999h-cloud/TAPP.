@@ -80,7 +80,63 @@ function replaceOrInsertTag(html, regex, replacement) {
   return html.replace('</head>', `    ${replacement}\n  </head>`);
 }
 
-function buildRouteHtml(templateHtml, routeMeta, baseUrl) {
+const ROUTE_ENTRY_SOURCES = {
+  '/': 'src/pages/HomePage.tsx',
+  '/guide': 'src/pages/GuidePage.tsx',
+  '/atlas': 'src/pages/AtlasPage.tsx',
+  '/sovi': 'src/pages/SoviPage.tsx',
+  '/bymarcos': 'src/pages/ByMarcosPage.tsx',
+};
+
+function loadViteManifest() {
+  const manifestPath = path.join(DIST_DIR, '.vite', 'manifest.json');
+  if (!fs.existsSync(manifestPath)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+function collectModulePreloads(manifest, entryKey) {
+  if (!manifest || !entryKey || !manifest[entryKey]) return [];
+  const files = new Set();
+  const visited = new Set();
+
+  function visit(key) {
+    if (visited.has(key)) return;
+    visited.add(key);
+    const chunk = manifest[key];
+    if (!chunk) return;
+    if (chunk.file && chunk.file.endsWith('.js')) {
+      files.add(chunk.file);
+    }
+    if (Array.isArray(chunk.imports)) {
+      for (const depKey of chunk.imports) {
+        visit(depKey);
+      }
+    }
+  }
+
+  visit(entryKey);
+  return [...files];
+}
+
+function injectRouteModulePreloads(html, routePath, manifest) {
+  const entryKey = ROUTE_ENTRY_SOURCES[routePath];
+  const chunkFiles = collectModulePreloads(manifest, entryKey);
+  if (chunkFiles.length === 0) return html;
+
+  const tags = chunkFiles
+    .map((file) => `/${file.replace(/^\/+/, '')}`)
+    .filter((href) => !html.includes(`href="${href}"`))
+    .map((href) => `<link rel="modulepreload" crossorigin href="${escapeAttr(href)}" />`);
+
+  if (tags.length === 0) return html;
+  return html.replace('</head>', `    ${tags.join('\n    ')}\n  </head>`);
+}
+
+function buildRouteHtml(templateHtml, routeMeta, baseUrl, manifest) {
   const collapsed = routeMeta.canonicalPath.trim().replace(/\/{2,}/g, '/');
   const cleanPath =
     !collapsed || collapsed === '/'
@@ -199,6 +255,9 @@ function buildRouteHtml(templateHtml, routeMeta, baseUrl) {
     );
   }
 
+  // 3b. Inject modulepreload links for the current route's split chunk(s)
+  html = injectRouteModulePreloads(html, cleanPath, manifest);
+
   // 4. Prerender full React body markup into <div id="root" data-route="...">
   const bodyHtml = renderRouteBodyHtml(cleanPath);
   const rootPattern = /<div\s+id="root"[^>]*>[\s\S]*?<\/div>/i;
@@ -237,6 +296,7 @@ function run() {
 
   const templateHtml = fs.readFileSync(INDEX_HTML_PATH, 'utf8');
   const baseUrl = resolveConfiguredBaseUrl();
+  const manifest = loadViteManifest();
   const publicRoutes = [
     HOME_SEO,
     GUIDE_SEO,
@@ -246,18 +306,18 @@ function run() {
   ];
 
   // 1. Update root dist/index.html with full prerendered homepage body & head metadata
-  const homeHtml = buildRouteHtml(templateHtml, HOME_SEO, baseUrl);
+  const homeHtml = buildRouteHtml(templateHtml, HOME_SEO, baseUrl, manifest);
   fs.writeFileSync(INDEX_HTML_PATH, homeHtml, 'utf8');
 
   // 2. Emit full prerendered HTML files for /guide and per-brand routes (both /<slug>.html and /<slug>/index.html)
-  const guideHtml = buildRouteHtml(templateHtml, GUIDE_SEO, baseUrl);
+  const guideHtml = buildRouteHtml(templateHtml, GUIDE_SEO, baseUrl, manifest);
   fs.writeFileSync(path.join(DIST_DIR, 'guide.html'), guideHtml, 'utf8');
   const guideDirPath = path.join(DIST_DIR, 'guide');
   fs.mkdirSync(guideDirPath, { recursive: true });
   fs.writeFileSync(path.join(guideDirPath, 'index.html'), guideHtml, 'utf8');
 
   for (const brand of [BRAND_SEO.atlas, BRAND_SEO.sovi, BRAND_SEO.bymarcos]) {
-    const brandHtml = buildRouteHtml(templateHtml, brand, baseUrl);
+    const brandHtml = buildRouteHtml(templateHtml, brand, baseUrl, manifest);
 
     const slugHtmlPath = path.join(DIST_DIR, `${brand.slug}.html`);
     fs.writeFileSync(slugHtmlPath, brandHtml, 'utf8');

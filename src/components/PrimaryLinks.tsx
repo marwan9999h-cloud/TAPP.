@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'motion/react';
+import { m } from 'motion/react';
 import { ArrowUpRight } from 'lucide-react';
 import { PRIMARY_LINKS } from '../data/atlasData';
 import { SmartLink } from '../types';
@@ -13,7 +13,7 @@ export const PrimaryLinks: React.FC<PrimaryLinksProps> = ({ onLinkClick }) => {
   return (
     <section aria-label="Primary Links" className="w-full space-y-2.5">
       {PRIMARY_LINKS.map((link: SmartLink, index: number) => (
-        <motion.a
+        <m.a
           key={link.id}
           href={link.url}
           target="_blank"
@@ -61,7 +61,7 @@ export const PrimaryLinks: React.FC<PrimaryLinksProps> = ({ onLinkClick }) => {
           <div className="pl-3 text-[#8A8A86] group-hover:text-[#F2F0EB] transition-colors shrink-0">
             <ArrowUpRight className="w-4 h-4 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </div>
-        </motion.a>
+        </m.a>
       ))}
     </section>
   );

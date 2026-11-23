@@ -35,7 +35,9 @@ function upsertMetaTag(
     document.head.appendChild(el);
   }
 
-  el.setAttribute('content', content);
+  if (el.getAttribute('content') !== content) {
+    el.setAttribute('content', content);
+  }
 }
 
 function removeMetaTag(selectorAttr: 'name' | 'property', attrValue: string): void {
@@ -50,7 +52,9 @@ function upsertCanonicalLink(href: string): void {
     link.setAttribute('rel', 'canonical');
     document.head.appendChild(link);
   }
-  link.setAttribute('href', href);
+  if (link.getAttribute('href') !== href) {
+    link.setAttribute('href', href);
+  }
 }
 
 function removeCanonicalLink(): void {
@@ -74,7 +78,10 @@ function upsertJsonLd(data: Record<string, unknown>): void {
     document.head.appendChild(script);
   }
 
-  script.textContent = JSON.stringify(data);
+  const nextJson = JSON.stringify(data);
+  if (script.textContent !== nextJson) {
+    script.textContent = nextJson;
+  }
 }
 
 function removeJsonLd(): void {
@@ -97,9 +104,15 @@ export function useDocumentMeta(meta: DocumentMetaInput | null): void {
     const absoluteOgImage = getAbsoluteAssetUrl(meta.ogImagePath);
     const ogLocale = meta.ogLocale || (meta.lang === 'ar' ? 'ar_EG' : 'en_GB');
 
-    document.documentElement.lang = meta.lang;
-    document.documentElement.dir = meta.dir;
-    document.title = meta.title;
+    if (document.documentElement.lang !== meta.lang) {
+      document.documentElement.lang = meta.lang;
+    }
+    if (document.documentElement.dir !== meta.dir) {
+      document.documentElement.dir = meta.dir;
+    }
+    if (document.title !== meta.title) {
+      document.title = meta.title;
+    }
 
     upsertMetaTag('name', 'description', meta.description);
 

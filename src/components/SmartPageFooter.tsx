@@ -31,7 +31,7 @@ export const SmartPageFooter: React.FC = () => {
       </div>
 
       {/* Subtle Copyright */}
-      <div className="text-[10px] font-mono-custom tracking-[0.2em] text-[#556080]">
+      <div className="text-[10px] font-mono-custom tracking-[0.2em] text-[#707CA3]">
         © ATLAS
       </div>
 
@@ -46,7 +46,7 @@ export const SmartPageFooter: React.FC = () => {
           <ArrowUpRight className="w-3 h-3" />
         </button>
 
-        <p className="text-[10px] font-mono-custom tracking-[0.12em] text-[#556080]">
+        <p className="text-[10px] font-mono-custom tracking-[0.12em] text-[#707CA3]">
           {BRAND_FOOTER_CONFIG.attributionText}
         </p>
       </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'motion/react';
+import { m } from 'motion/react';
 import { Share2, Radio } from 'lucide-react';
 import { ProfileAvatar } from './ProfileAvatar';
 
@@ -29,27 +29,27 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onShareClick }) =>
       </div>
 
       {/* Avatar */}
-      <motion.div
+      <m.div
         initial={{ scale: 0.94, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
         className="mb-4 relative"
       >
         <ProfileAvatar size="lg" />
-      </motion.div>
+      </m.div>
 
       {/* Artist Name: ATLAS */}
-      <motion.h1
+      <m.h1
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
         className="font-display text-4xl sm:text-5xl font-black uppercase tracking-tight text-[#F4F4F8] leading-none"
       >
         ATLAS
-      </motion.h1>
+      </m.h1>
 
       {/* Role */}
-      <motion.div
+      <m.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4, delay: 0.15 }}
@@ -60,17 +60,17 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onShareClick }) =>
         <span>RAPPER</span>
         <span className="text-[#3A4366]">•</span>
         <span>PRODUCER</span>
-      </motion.div>
+      </m.div>
 
       {/* Minimal supporting atmospheric line */}
-      <motion.p
+      <m.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4, delay: 0.2 }}
         className="mt-3 text-xs text-[#707B9E] font-mono-custom tracking-wider"
       >
         Music. Vision. No Limits.
-      </motion.p>
+      </m.p>
     </header>
   );
 };

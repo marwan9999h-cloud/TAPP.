@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
+import { m, AnimatePresence, useReducedMotion } from 'motion/react';
 import { X, Copy, Check, QrCode, Download, Share2 } from 'lucide-react';
 import { getBrandCanonicalUrl } from '../utils/url';
 import { copyTextToClipboard, shareBrandPage } from '../utils/share';
@@ -135,7 +135,7 @@ export const SoviQrModal: React.FC<SoviQrModalProps> = ({
           aria-labelledby="sovi-qr-modal-title"
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
         >
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -143,7 +143,7 @@ export const SoviQrModal: React.FC<SoviQrModalProps> = ({
             className="fixed inset-0 bg-[#34203B]/35 backdrop-blur-xs"
           />
 
-          <motion.div
+          <m.div
             initial={shouldReduceMotion ? { opacity: 1 } : { scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={shouldReduceMotion ? { opacity: 0 } : { scale: 0.95, opacity: 0 }}
@@ -191,7 +191,7 @@ export const SoviQrModal: React.FC<SoviQrModalProps> = ({
               )}
             </div>
 
-            <p className="text-[10px] font-mono-custom text-[#8B6D93] truncate max-w-full mb-4 px-2">
+            <p className="text-[10px] font-mono-custom text-[#7B5D83] truncate max-w-full mb-4 px-2">
               {canonicalUrl}
             </p>
 
@@ -244,7 +244,7 @@ export const SoviQrModal: React.FC<SoviQrModalProps> = ({
                 <span>PNG 1024px</span>
               </button>
             </div>
-          </motion.div>
+          </m.div>
         </div>
       )}
     </AnimatePresence>

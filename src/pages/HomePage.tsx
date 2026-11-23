@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
+import React, { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
+import { m, AnimatePresence, useReducedMotion } from 'motion/react';
 import {
   Radio,
   ArrowLeft,
@@ -27,7 +27,11 @@ import {
 } from 'lucide-react';
 import { navigate } from '../router';
 import { HeroPhoneSwitcher } from '../components/HeroPhoneSwitcher';
-import { OrderBriefModal, TAPP_WHATSAPP_BASE_URL } from '../components/OrderBriefModal';
+import { TAPP_WHATSAPP_BASE_URL } from '../config/tapp';
+
+const LazyOrderBriefModal = lazy(() =>
+  import('../components/OrderBriefModal').then((mod) => ({ default: mod.OrderBriefModal }))
+);
 
 export type NavSectionId = 'top' | 'how-it-works' | 'examples' | 'smart-page';
 
@@ -99,6 +103,7 @@ const USE_CASES = [
 export const HomePage: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [hasOpenedOrderModal, setHasOpenedOrderModal] = useState(false);
 
   const headerRef = useRef<HTMLElement | null>(null);
   const mobileMenuButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -219,6 +224,7 @@ export const HomePage: React.FC = () => {
 
   const openOrderModal = () => {
     setMobileMenuOpen(false);
+    setHasOpenedOrderModal(true);
     setIsOrderModalOpen(true);
   };
 
@@ -299,7 +305,7 @@ export const HomePage: React.FC = () => {
         {/* Mobile Dropdown Menu (Overlay so header height stays constant during scroll) */}
         <AnimatePresence>
           {mobileMenuOpen && (
-            <motion.div
+            <m.div
               id="mobile-nav-menu"
               initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -343,7 +349,7 @@ export const HomePage: React.FC = () => {
                   ابدأ TAPP الآن
                 </button>
               </nav>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
       </header>
@@ -351,7 +357,7 @@ export const HomePage: React.FC = () => {
       {/* Mobile Menu Backdrop */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.div
+          <m.div
             aria-hidden="true"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -363,6 +369,7 @@ export const HomePage: React.FC = () => {
         )}
       </AnimatePresence>
 
+      <main className="flex-1">
       {/* ─── 2. HERO SECTION ─── */}
       <section
         id="top"
@@ -587,7 +594,7 @@ export const HomePage: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
             {/* EXAMPLE 1: ATLAS */}
-            <motion.div
+            <m.div
               whileHover={prefersReducedMotion ? undefined : { y: -4 }}
               transition={{ duration: 0.2 }}
               role="button"
@@ -636,10 +643,10 @@ export const HomePage: React.FC = () => {
                 <span>شوف صفحة ATLAS</span>
                 <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
               </div>
-            </motion.div>
+            </m.div>
 
             {/* EXAMPLE 2: SOVI */}
-            <motion.div
+            <m.div
               whileHover={prefersReducedMotion ? undefined : { y: -4 }}
               transition={{ duration: 0.2 }}
               role="button"
@@ -655,7 +662,7 @@ export const HomePage: React.FC = () => {
             >
               <div
                 dir="ltr"
-                className="flex items-center justify-between text-[10px] font-mono-custom text-[#8B6D93] mb-6"
+                className="flex items-center justify-between text-[10px] font-mono-custom text-[#7B5D83] mb-6"
               >
                 <span>HANDMADE GOODS</span>
                 <span>/sovi</span>
@@ -674,7 +681,7 @@ export const HomePage: React.FC = () => {
                 </h3>
                 <p
                   dir="ltr"
-                  className="text-[11px] font-mono-custom text-[#8B6D93] mt-0.5 text-right"
+                  className="text-[11px] font-mono-custom text-[#7B5D83] mt-0.5 text-right"
                 >
                   MADE BY HAND · @sovi_storee
                 </p>
@@ -688,10 +695,10 @@ export const HomePage: React.FC = () => {
                 <span>شوف صفحة SOVI</span>
                 <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
               </div>
-            </motion.div>
+            </m.div>
 
             {/* EXAMPLE 3: BY MARCOS (Accurate English-only creative studio description) */}
-            <motion.div
+            <m.div
               whileHover={prefersReducedMotion ? undefined : { y: -4 }}
               transition={{ duration: 0.2 }}
               role="button"
@@ -740,7 +747,7 @@ export const HomePage: React.FC = () => {
                 <span>شوف صفحة BY MARCOS</span>
                 <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
               </div>
-            </motion.div>
+            </m.div>
           </div>
         </div>
       </section>
@@ -906,6 +913,7 @@ export const HomePage: React.FC = () => {
           </div>
         </div>
       </section>
+      </main>
 
       {/* ─── 8. FOOTER ─── */}
       <footer className="w-full border-t border-[#E8E8E4] bg-[#FAFAF8] pt-14 pb-10">
@@ -1031,7 +1039,7 @@ export const HomePage: React.FC = () => {
           <div className="mt-8 pt-6 border-t border-[#E8E8E4]/80 w-full flex items-center justify-center">
             <span
               dir="ltr"
-              className="text-[11px] font-mono-custom tracking-[0.18em] text-[#9E9B95] select-none"
+              className="text-[11px] font-mono-custom tracking-[0.18em] text-[#73706B] select-none"
             >
               By : Marwan M. Hammad
             </span>
@@ -1040,10 +1048,14 @@ export const HomePage: React.FC = () => {
       </footer>
 
       {/* ─── SMART BRIEF BUILDER & ORDER MODAL (ابدأ TAPP) ─── */}
-      <OrderBriefModal
-        isOpen={isOrderModalOpen}
-        onClose={() => setIsOrderModalOpen(false)}
-      />
+      {hasOpenedOrderModal && (
+        <Suspense fallback={null}>
+          <LazyOrderBriefModal
+            isOpen={isOrderModalOpen}
+            onClose={() => setIsOrderModalOpen(false)}
+          />
+        </Suspense>
+      )}
     </div>
   );
 };

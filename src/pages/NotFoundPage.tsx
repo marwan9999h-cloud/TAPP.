@@ -32,7 +32,7 @@ export const NotFoundPage: React.FC = () => {
         <div className="w-full max-w-md text-center">
           <span
             dir="ltr"
-            className="inline-block font-mono-custom text-xs font-bold tracking-[0.24em] text-[#706E6B] uppercase bg-[#EFEFEA] border border-[#E2E2DC] px-3 py-1 rounded-full mb-6"
+            className="inline-block font-mono-custom text-xs font-bold tracking-[0.24em] text-[#666460] uppercase bg-[#EFEFEA] border border-[#E2E2DC] px-3 py-1 rounded-full mb-6"
           >
             ERROR 404
           </span>

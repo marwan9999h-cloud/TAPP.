@@ -1,15 +1,19 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import React, { Suspense, lazy, useState } from 'react';
+import { m, AnimatePresence } from 'motion/react';
 import { ArrowUpRight, Share2, CheckCircle2, MessageCircle, Instagram, QrCode } from 'lucide-react';
 import { BRAND_FOOTER_CONFIG } from '../config/brands';
 import { SOVI_EXTERNAL_CONFIG } from '../data/soviData';
 import { navigate } from '../router';
 import { getBrandCanonicalUrl } from '../utils/url';
 import { shareBrandPage } from '../utils/share';
-import { SoviQrModal } from '../components/SoviQrModal';
+
+const LazySoviQrModal = lazy(() =>
+  import('../components/SoviQrModal').then((mod) => ({ default: mod.SoviQrModal }))
+);
 
 export const SoviPage: React.FC = () => {
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+  const [hasOpenedQrModal, setHasOpenedQrModal] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const INSTAGRAM_URL = SOVI_EXTERNAL_CONFIG.instagramUrl;
@@ -48,14 +52,17 @@ export const SoviPage: React.FC = () => {
       <main className="w-full max-w-[420px] px-5 sm:px-6 py-7 sm:py-9 flex flex-col items-center z-10">
         
         {/* Top minimal bar */}
-        <div className="w-full flex items-center justify-between pb-6 text-[10px] font-mono-custom tracking-[0.24em] text-[#8B6D93] uppercase">
+        <div className="w-full flex items-center justify-between pb-6 text-[10px] font-mono-custom tracking-[0.24em] text-[#7B5D83] uppercase">
           <span className="flex items-center gap-1.5 font-medium">
             <span className="w-1.5 h-1.5 rounded-full bg-[#A084A8]" />
             <span>SOVI OFFICIAL</span>
           </span>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setIsQrModalOpen(true)}
+              onClick={() => {
+                setHasOpenedQrModal(true);
+                setIsQrModalOpen(true);
+              }}
               type="button"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#F3EDF7] hover:bg-[#EAE4F0] text-[#5C3D61] border border-[#E5DEED] transition-colors cursor-pointer text-[10px]"
               title="SOVI QR Code"
@@ -80,7 +87,7 @@ export const SoviPage: React.FC = () => {
         {/* ─── 1. HERO SECTION ─── */}
         <header className="flex flex-col items-center text-center pt-2 pb-7 w-full">
           {/* Official SOVI Logo Emblem: Butterfly, delicate botanical lines & thread motif */}
-          <motion.div
+          <m.div
             initial={{ scale: 0.94, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
@@ -204,43 +211,43 @@ export const SoviPage: React.FC = () => {
               />
               <circle cx="60" cy="95.5" r="1" fill="#8B6D93" />
             </svg>
-          </motion.div>
+          </m.div>
 
           {/* SOVI Brand Name */}
-          <motion.h1
+          <m.h1
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, delay: 0.1 }}
             className="font-serif-custom text-4xl sm:text-5xl font-normal tracking-[0.24em] text-[#34203B] uppercase leading-tight"
           >
             SOVI
-          </motion.h1>
+          </m.h1>
 
           {/* HANDMADE GOODS */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.15 }}
             className="mt-2 text-xs font-mono-custom tracking-[0.3em] text-[#7D5B84] uppercase font-medium"
           >
             HANDMADE GOODS
-          </motion.div>
+          </m.div>
 
           {/* Supporting line */}
-          <motion.p
+          <m.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.2 }}
             className="mt-3 text-xs sm:text-sm text-[#735A7A] max-w-xs font-normal italic tracking-wide"
           >
             “Handmade pieces, made with love.”
-          </motion.p>
+          </m.p>
         </header>
 
         {/* ─── 2. PRIMARY ACTIONS ─── */}
         <section aria-label="Primary Actions" className="w-full space-y-3 mt-1">
           {/* Action 1: Instagram */}
-          <motion.a
+          <m.a
             href={INSTAGRAM_URL}
             target="_blank"
             rel="noopener noreferrer"
@@ -257,18 +264,18 @@ export const SoviPage: React.FC = () => {
                 <span className="font-medium text-sm sm:text-base text-[#34203B] block leading-snug">
                   Follow SOVI on Instagram
                 </span>
-                <span className="text-[11px] font-mono-custom text-[#8B6D93] tracking-wider block">
+                <span className="text-[11px] font-mono-custom text-[#7B5D83] tracking-wider block">
                   @sovi_storee
                 </span>
               </div>
             </div>
-            <div className="text-[#8B6D93] group-hover:text-[#5C3D61] transition-colors shrink-0">
+            <div className="text-[#7B5D83] group-hover:text-[#5C3D61] transition-colors shrink-0">
               <ArrowUpRight className="w-4 h-4 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </div>
-          </motion.a>
+          </m.a>
 
           {/* Action 2: WhatsApp Community */}
-          <motion.a
+          <m.a
             href={WHATSAPP_URL}
             target="_blank"
             rel="noopener noreferrer"
@@ -285,15 +292,15 @@ export const SoviPage: React.FC = () => {
                 <span className="font-medium text-sm sm:text-base text-[#34203B] block leading-snug">
                   Join our WhatsApp Community
                 </span>
-                <span className="text-[11px] font-mono-custom text-[#8B6D93] tracking-wider block">
+                <span className="text-[11px] font-mono-custom text-[#7B5D83] tracking-wider block">
                   Orders & Updates
                 </span>
               </div>
             </div>
-            <div className="text-[#8B6D93] group-hover:text-[#5C3D61] transition-colors shrink-0">
+            <div className="text-[#7B5D83] group-hover:text-[#5C3D61] transition-colors shrink-0">
               <ArrowUpRight className="w-4 h-4 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </div>
-          </motion.a>
+          </m.a>
         </section>
 
         {/* ─── 3. BRAND STORY: MADE BY HAND ─── */}
@@ -318,7 +325,7 @@ export const SoviPage: React.FC = () => {
 
         {/* ─── 4. FOUNDER SECTION ─── */}
         <section aria-label="Founder" className="w-full mt-5 p-5 rounded-2xl bg-gradient-to-b from-[#FAF5FC] to-[#F5EDF8] border border-[#E4D7EB] flex flex-col items-center text-center shadow-[0_2px_8px_rgba(52,32,59,0.03)]">
-          <span className="text-[10px] font-mono-custom tracking-[0.22em] text-[#8B6D93] uppercase mb-1">
+          <span className="text-[10px] font-mono-custom tracking-[0.22em] text-[#7B5D83] uppercase mb-1">
             BEHIND SOVI
           </span>
           <span className="text-xs text-[#7D5B84] font-medium mb-1">
@@ -345,7 +352,7 @@ export const SoviPage: React.FC = () => {
             >
               <Instagram className="w-5 h-5 text-[#7D5B84] group-hover:text-[#34203B] mb-1.5 transition-colors" />
               <span className="text-xs font-medium text-[#34203B]">Instagram</span>
-              <span className="text-[10px] font-mono-custom text-[#8B6D93] mt-0.5">@sovi_storee</span>
+              <span className="text-[10px] font-mono-custom text-[#7B5D83] mt-0.5">@sovi_storee</span>
             </a>
 
             <a
@@ -356,7 +363,7 @@ export const SoviPage: React.FC = () => {
             >
               <MessageCircle className="w-5 h-5 text-[#7D5B84] group-hover:text-[#34203B] mb-1.5 transition-colors" />
               <span className="text-xs font-medium text-[#34203B]">WhatsApp</span>
-              <span className="text-[10px] font-mono-custom text-[#8B6D93] mt-0.5">Orders & Updates</span>
+              <span className="text-[10px] font-mono-custom text-[#7B5D83] mt-0.5">Orders & Updates</span>
             </a>
           </div>
         </section>
@@ -366,7 +373,7 @@ export const SoviPage: React.FC = () => {
           <span className="font-serif-custom text-xl tracking-[0.2em] text-[#34203B] uppercase">
             SOVI
           </span>
-          <span className="text-[10px] font-mono-custom tracking-[0.25em] text-[#8B6D93] uppercase">
+          <span className="text-[10px] font-mono-custom tracking-[0.25em] text-[#7B5D83] uppercase">
             HANDMADE GOODS
           </span>
 
@@ -375,7 +382,7 @@ export const SoviPage: React.FC = () => {
           </p>
 
           <div className="pt-3 flex flex-col items-center gap-2.5">
-            <span className="text-[9px] font-mono-custom tracking-[0.24em] text-[#A892AE] uppercase">
+            <span className="text-[9px] font-mono-custom tracking-[0.24em] text-[#7F6187] uppercase">
               POWERED BY TAPP
             </span>
 
@@ -388,7 +395,7 @@ export const SoviPage: React.FC = () => {
               <ArrowUpRight className="w-3 h-3 text-[#7D5B84]" />
             </button>
 
-            <p className="text-[10px] font-body text-[#9A82A1]">
+            <p className="text-[10px] font-body text-[#7F6187]">
               {BRAND_FOOTER_CONFIG.attributionText}
             </p>
           </div>
@@ -396,16 +403,20 @@ export const SoviPage: React.FC = () => {
       </main>
 
       {/* SOVI QR Code & Print Export Modal */}
-      <SoviQrModal
-        isOpen={isQrModalOpen}
-        onClose={() => setIsQrModalOpen(false)}
-        onToast={showToast}
-      />
+      {hasOpenedQrModal && (
+        <Suspense fallback={null}>
+          <LazySoviQrModal
+            isOpen={isQrModalOpen}
+            onClose={() => setIsQrModalOpen(false)}
+            onToast={showToast}
+          />
+        </Suspense>
+      )}
 
       {/* Toast Notification */}
       <AnimatePresence>
         {toastMessage && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 16 }}
@@ -413,7 +424,7 @@ export const SoviPage: React.FC = () => {
           >
             <CheckCircle2 className="w-3.5 h-3.5 text-[#D6C7DE]" />
             <span>{toastMessage}</span>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

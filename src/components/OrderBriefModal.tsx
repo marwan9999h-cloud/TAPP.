@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
+import { m, AnimatePresence, useReducedMotion } from 'motion/react';
 import { CheckCircle2, MessageCircle, X } from 'lucide-react';
+import { TAPP_WHATSAPP_BASE_URL, TAPP_WHATSAPP_NUMBER } from '../config/tapp';
 
-export const TAPP_WHATSAPP_NUMBER = '+201205288295';
-export const TAPP_WHATSAPP_BASE_URL = `https://wa.me/${TAPP_WHATSAPP_NUMBER}`;
+export { TAPP_WHATSAPP_BASE_URL, TAPP_WHATSAPP_NUMBER };
 
 export const USE_CASE_OPTIONS = [
   { id: 'personal', label: 'كارت شخصي' },
@@ -107,7 +107,7 @@ export const OrderBriefModal: React.FC<OrderBriefModalProps> = ({ isOpen, onClos
           }}
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
         >
-          <motion.div
+          <m.div
             role="dialog"
             aria-modal="true"
             aria-labelledby="order-modal-title"
@@ -159,7 +159,7 @@ export const OrderBriefModal: React.FC<OrderBriefModalProps> = ({ isOpen, onClos
                     href={generatedUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-colors inline-flex items-center justify-center gap-2"
+                    className="w-full sm:w-auto px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl transition-colors inline-flex items-center justify-center gap-2"
                   >
                     <MessageCircle className="w-4 h-4" />
                     <span>افتح WhatsApp لإرسال الملخص</span>
@@ -331,7 +331,7 @@ export const OrderBriefModal: React.FC<OrderBriefModalProps> = ({ isOpen, onClos
                 </div>
               </form>
             )}
-          </motion.div>
+          </m.div>
         </div>
       )}
     </AnimatePresence>

@@ -1,0 +1,2 @@
+export const TAPP_WHATSAPP_NUMBER = '+201205288295';
+export const TAPP_WHATSAPP_BASE_URL = `https://wa.me/${TAPP_WHATSAPP_NUMBER}`;

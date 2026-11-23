@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
+import { m, AnimatePresence, useReducedMotion } from 'motion/react';
 import {
   ArrowUpRight,
   QrCode,
@@ -17,13 +17,7 @@ import { useDocumentMeta } from '../hooks/useDocumentMeta';
 import { navigate } from '../router';
 import { getBrandCanonicalUrl } from '../utils/url';
 import { copyTextToClipboard, shareBrandPage } from '../utils/share';
-import { downloadBrandVCard } from '../utils/vcard';
 import { getBrandContactInput, isBrandContactEligible } from '../data/brandContacts';
-import {
-  generateBrandQrSvg,
-  downloadBrandQrSvg,
-  downloadBrandQrPng,
-} from '../utils/qr';
 import {
   BY_MARCOS_EXTERNAL_CONFIG,
   BY_MARCOS_SERVICES,
@@ -112,12 +106,15 @@ export const ByMarcosPage: React.FC = () => {
     let cancelled = false;
     setQrError(false);
 
-    generateBrandQrSvg(canonicalUrl, {
-      darkColor: '#101010',
-      lightColor: '#FFFFFF',
-      margin: 3,
-      errorCorrectionLevel: 'M',
-    })
+    import('../utils/qr')
+      .then(({ generateBrandQrSvg }) =>
+        generateBrandQrSvg(canonicalUrl, {
+          darkColor: '#101010',
+          lightColor: '#FFFFFF',
+          margin: 3,
+          errorCorrectionLevel: 'M',
+        })
+      )
       .then((svg) => {
         if (!cancelled) setQrSvg(svg);
       })
@@ -173,18 +170,24 @@ export const ByMarcosPage: React.FC = () => {
     }
   };
 
-  const handleSaveContact = () => {
+  const handleSaveContact = async () => {
     if (!showSaveContact) return;
-    const ok = downloadBrandVCard(contactInput);
-    if (ok) {
-      showToast('CONTACT CARD (.VCF) DOWNLOADED');
-    } else {
+    try {
+      const { downloadBrandVCard } = await import('../utils/vcard');
+      const ok = downloadBrandVCard(contactInput);
+      if (ok) {
+        showToast('CONTACT CARD (.VCF) DOWNLOADED');
+      } else {
+        showToast('UNABLE TO EXPORT CONTACT FILE');
+      }
+    } catch {
       showToast('UNABLE TO EXPORT CONTACT FILE');
     }
   };
 
   const handleDownloadSvg = async () => {
     try {
+      const { downloadBrandQrSvg } = await import('../utils/qr');
       await downloadBrandQrSvg(canonicalUrl, 'bymarcos', {
         darkColor: '#101010',
         lightColor: '#FFFFFF',
@@ -198,6 +201,7 @@ export const ByMarcosPage: React.FC = () => {
 
   const handleDownloadPng = async () => {
     try {
+      const { downloadBrandQrPng } = await import('../utils/qr');
       await downloadBrandQrPng(canonicalUrl, 'bymarcos', {
         size: 1024,
         darkColor: '#101010',
@@ -313,14 +317,14 @@ export const ByMarcosPage: React.FC = () => {
             {/* Dominant Existing Wordmark */}
             <div className="pt-10 pb-6 sm:pt-14 sm:pb-8">
               <div className="overflow-hidden">
-                <motion.h1
+                <m.h1
                   initial={shouldReduceMotion ? false : { y: '100%', opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ duration: 0.7, ease: CINEMATIC_EASE }}
                   className="font-serif-custom text-[clamp(2.5rem,10.5vw,7.25rem)] font-semibold tracking-tight text-[#F4F0EA] leading-[0.92] text-left"
                 >
                   BY MARCOS
-                </motion.h1>
+                </m.h1>
               </div>
 
               <div className="mt-6 sm:mt-8 flex items-center gap-4">
@@ -329,14 +333,14 @@ export const ByMarcosPage: React.FC = () => {
                   className="h-px w-8 sm:w-12 bg-[#78343B] shrink-0"
                 />
                 <div className="overflow-hidden">
-                  <motion.p
+                  <m.p
                     initial={shouldReduceMotion ? false : { y: '100%', opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.65, delay: 0.1, ease: CINEMATIC_EASE }}
                     className="font-mono-custom text-xs sm:text-sm tracking-[0.26em] text-[#D8D3CA] uppercase"
                   >
                     THE RED FRAME COLLECTIVE
-                  </motion.p>
+                  </m.p>
                 </div>
               </div>
             </div>
@@ -344,7 +348,7 @@ export const ByMarcosPage: React.FC = () => {
         </section>
 
         {/* ─── SECTION 02 — THE STATEMENT ─── */}
-        <motion.section
+        <m.section
           id="statement"
           aria-labelledby="statement-heading"
           {...sectionRevealProps}
@@ -363,7 +367,7 @@ export const ByMarcosPage: React.FC = () => {
                 className="font-serif-custom text-[clamp(2.25rem,5.4vw,4.5rem)] font-normal leading-[1.06] tracking-tight text-[#F4F0EA] max-w-3xl"
               >
                 <span className="block overflow-hidden">
-                  <motion.span
+                  <m.span
                     className="block"
                     initial={shouldReduceMotion ? false : { y: '100%', opacity: 0 }}
                     whileInView={{ y: 0, opacity: 1 }}
@@ -371,10 +375,10 @@ export const ByMarcosPage: React.FC = () => {
                     transition={{ duration: 0.65, ease: CINEMATIC_EASE }}
                   >
                     EVERY FRAME HAS A STORY.
-                  </motion.span>
+                  </m.span>
                 </span>
                 <span className="block overflow-hidden mt-2 sm:mt-3">
-                  <motion.span
+                  <m.span
                     className="block italic text-[#D9D3C9]"
                     initial={shouldReduceMotion ? false : { y: '100%', opacity: 0 }}
                     whileInView={{ y: 0, opacity: 1 }}
@@ -382,7 +386,7 @@ export const ByMarcosPage: React.FC = () => {
                     transition={{ duration: 0.65, delay: 0.1, ease: CINEMATIC_EASE }}
                   >
                     EVERY STORY HAS A FEELING.
-                  </motion.span>
+                  </m.span>
                 </span>
               </h2>
               <div
@@ -391,10 +395,10 @@ export const ByMarcosPage: React.FC = () => {
               />
             </div>
           </div>
-        </motion.section>
+        </m.section>
 
         {/* ─── SECTION 03 — THE CREATIVE PRACTICE ─── */}
-        <motion.section
+        <m.section
           id="practice"
           aria-labelledby="practice-heading"
           {...sectionRevealProps}
@@ -415,7 +419,7 @@ export const ByMarcosPage: React.FC = () => {
 
           <ol className="divide-y divide-[#292929]">
             {BY_MARCOS_SERVICES.map((service, index) => (
-              <motion.li
+              <m.li
                 key={service.number}
                 initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -430,20 +434,20 @@ export const ByMarcosPage: React.FC = () => {
                   href="#connection"
                   className="group relative flex items-baseline gap-4 sm:gap-8 py-6 sm:py-8 px-2 sm:px-4 transition-colors duration-200 hover:bg-[#191919] focus-visible:bg-[#191919] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#78343B]"
                 >
-                  <span className="font-mono-custom text-xs sm:text-sm tracking-[0.2em] text-[#9E9990] group-hover:text-[#C4636D] group-focus-visible:text-[#C4636D] tabular-nums shrink-0 transition-colors duration-200">
+                  <span className="font-mono-custom text-xs sm:text-sm tracking-[0.2em] text-[#9E9990] group-hover:text-[#C96973] group-focus-visible:text-[#C96973] tabular-nums shrink-0 transition-colors duration-200">
                     {service.number} <span aria-hidden="true">—</span>
                   </span>
                   <span className="font-serif-custom text-xl sm:text-3xl lg:text-[2.65rem] font-normal tracking-tight text-[#F4F0EA] leading-tight transition-transform duration-200 md:group-hover:translate-x-2 md:group-focus-visible:translate-x-2">
                     {service.name}
                   </span>
                 </a>
-              </motion.li>
+              </m.li>
             ))}
           </ol>
-        </motion.section>
+        </m.section>
 
         {/* ─── SECTION 04 — THE PRESENCE ─── */}
-        <motion.section
+        <m.section
           id="presence"
           aria-labelledby="presence-heading"
           {...sectionRevealProps}
@@ -484,10 +488,10 @@ export const ByMarcosPage: React.FC = () => {
               </div>
             </div>
           </div>
-        </motion.section>
+        </m.section>
 
         {/* ─── SECTION 05 — THE CONNECTION ─── */}
-        <motion.section
+        <m.section
           id="connection"
           aria-labelledby="connection-heading"
           {...sectionRevealProps}
@@ -618,7 +622,7 @@ export const ByMarcosPage: React.FC = () => {
               </button>
             </div>
           </div>
-        </motion.section>
+        </m.section>
       </main>
 
       {/* ─── SECTION 06 — THE SIGN-OFF ─── */}
@@ -664,7 +668,7 @@ export const ByMarcosPage: React.FC = () => {
             aria-labelledby="bymarcos-qr-modal-title"
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
           >
-            <motion.div
+            <m.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -672,7 +676,7 @@ export const ByMarcosPage: React.FC = () => {
               className="fixed inset-0 bg-black/80 backdrop-blur-xs"
             />
 
-            <motion.div
+            <m.div
               initial={shouldReduceMotion ? false : { scale: 0.96, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={shouldReduceMotion ? { opacity: 0 } : { scale: 0.96, opacity: 0 }}
@@ -784,7 +788,7 @@ export const ByMarcosPage: React.FC = () => {
                   </p>
                 </div>
               )}
-            </motion.div>
+            </m.div>
           </div>
         )}
       </AnimatePresence>
@@ -792,7 +796,7 @@ export const ByMarcosPage: React.FC = () => {
       {/* Subtle Toast */}
       <AnimatePresence>
         {toastMessage && (
-          <motion.div
+          <m.div
             initial={shouldReduceMotion ? false : { opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 14 }}
@@ -800,7 +804,7 @@ export const ByMarcosPage: React.FC = () => {
           >
             <CheckCircle2 className="w-3.5 h-3.5 text-[#C4636D]" />
             <span>{toastMessage}</span>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

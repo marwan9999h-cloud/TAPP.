@@ -467,6 +467,31 @@ function verifyPrerenderedDist(projectRoot: string): void {
       const rootBodyHtml = html.slice(rootStart + rootMarker.length, bodyCloseIdx);
       assert.ok(!/^<\/div>\s*$/i.test(rootBodyHtml.trim()), `${relFile} has empty #root body!`);
 
+      // Verify single semantic <main> landmark inside prerendered HTML and non-blocking display=swap fonts
+      const mainOpenMatches = rootBodyHtml.match(/<main\b/gi);
+      const mainCloseMatches = rootBodyHtml.match(/<\/main>/gi);
+      assert.equal(
+        mainOpenMatches?.length,
+        1,
+        `${relFile} must contain exactly 1 <main> landmark (found ${mainOpenMatches?.length ?? 0})`
+      );
+      assert.equal(
+        mainCloseMatches?.length,
+        1,
+        `${relFile} must contain exactly 1 </main> closing tag`
+      );
+      assert.ok(
+        html.includes('fonts.googleapis.com') &&
+          html.includes('display=swap') &&
+          html.includes('media="print"') &&
+          html.includes('<noscript>'),
+        `${relFile} must load Google Fonts non-blocking with display=swap and noscript fallback`
+      );
+      assert.ok(
+        /<link\s+rel="modulepreload"/i.test(html),
+        `${relFile} missing route modulepreload hint for split JS chunk`
+      );
+
       const h1Match = rootBodyHtml.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i);
       assert.ok(h1Match, `${relFile} missing prerendered <h1> inside #root`);
       const h1Text = stripTags(h1Match[1]);
@@ -492,7 +517,7 @@ function verifyPrerenderedDist(projectRoot: string): void {
         }
       }
     }
-    console.log(`✓ [PRERENDER] ${spec.route} -> H1 "${spec.requiredH1Text}" + content + JSON-LD + OG verified`);
+    console.log(`✓ [PRERENDER] ${spec.route} -> <main> + H1 "${spec.requiredH1Text}" + content + JSON-LD + OG verified`);
   }
 
   // Sitemap check with static <lastmod> dates

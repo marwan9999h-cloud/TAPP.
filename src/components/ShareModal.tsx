@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
+import { m, AnimatePresence, useReducedMotion } from 'motion/react';
 import { X, Copy, Check, QrCode, Download, Share2, UserPlus } from 'lucide-react';
 import { BrandSlug } from '../config/brands';
 import { getBrandContactInput, isBrandContactEligible } from '../data/brandContacts';
@@ -157,7 +157,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
           aria-labelledby="atlas-share-modal-title"
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
         >
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -165,7 +165,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
             className="fixed inset-0 bg-black/80 backdrop-blur-sm"
           />
 
-          <motion.div
+          <m.div
             initial={shouldReduceMotion ? { opacity: 1 } : { scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={shouldReduceMotion ? { opacity: 0 } : { scale: 0.95, opacity: 0 }}
@@ -279,7 +279,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
                 <span>SAVE CONTACT (.VCF)</span>
               </button>
             )}
-          </motion.div>
+          </m.div>
         </div>
       )}
     </AnimatePresence>

@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import React, { Suspense, lazy, useState } from 'react';
+import { m, AnimatePresence } from 'motion/react';
 import { CheckCircle2, ArrowUpRight, Headphones, Share2 } from 'lucide-react';
 import { ProfileHeader } from '../components/ProfileHeader';
 import { SmartPageFooter } from '../components/SmartPageFooter';
-import { ShareModal } from '../components/ShareModal';
 import { PlatformIcon } from '../components/PlatformIcon';
 import {
   ATLAS_PROFILE,
@@ -12,8 +11,13 @@ import {
 } from '../data/atlasData';
 import { SmartLink } from '../types';
 
+const LazyShareModal = lazy(() =>
+  import('../components/ShareModal').then((mod) => ({ default: mod.ShareModal }))
+);
+
 export const AtlasPage: React.FC = () => {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [hasOpenedShareModal, setHasOpenedShareModal] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (message: string) => {
@@ -40,7 +44,12 @@ export const AtlasPage: React.FC = () => {
       {/* Main Container: Mobile viewport proportion, centered on desktop */}
       <main className="w-full max-w-[440px] px-4 sm:px-5 py-6 sm:py-8 flex flex-col items-center z-10">
         {/* 1. HERO SECTION */}
-        <ProfileHeader onShareClick={() => setIsShareModalOpen(true)} />
+        <ProfileHeader
+          onShareClick={() => {
+            setHasOpenedShareModal(true);
+            setIsShareModalOpen(true);
+          }}
+        />
 
         {/* 2. MUSIC SECTION: LISTEN TO ATLAS */}
         <section id="music-section" className="w-full mt-4 scroll-mt-6">
@@ -51,14 +60,14 @@ export const AtlasPage: React.FC = () => {
                 LISTEN TO ATLAS
               </span>
             </div>
-            <span className="text-[9px] font-mono-custom tracking-[0.18em] text-[#69759B] uppercase">
+            <span className="text-[9px] font-mono-custom tracking-[0.18em] text-[#707CA3] uppercase">
               STREAMING
             </span>
           </div>
 
           <div className="space-y-2.5">
             {MUSIC_STREAMING_LINKS.map((link, index) => (
-              <motion.a
+              <m.a
                 key={link.id}
                 href={link.url}
                 target="_blank"
@@ -119,7 +128,7 @@ export const AtlasPage: React.FC = () => {
                 <div className="pl-2 text-[#68759E] group-hover:text-[#F4F4F8] transition-colors shrink-0">
                   <ArrowUpRight className="w-4 h-4 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </div>
-              </motion.a>
+              </m.a>
             ))}
           </div>
         </section>
@@ -130,14 +139,14 @@ export const AtlasPage: React.FC = () => {
             <span className="text-[11px] font-mono-custom font-bold tracking-[0.22em] text-[#CCD4F0] uppercase">
               FOLLOW ATLAS
             </span>
-            <span className="text-[9px] font-mono-custom tracking-[0.18em] text-[#69759B] uppercase">
+            <span className="text-[9px] font-mono-custom tracking-[0.18em] text-[#707CA3] uppercase">
               SOCIAL
             </span>
           </div>
 
           <div className="space-y-2">
             {SOCIAL_LINKS.map((link, index) => (
-              <motion.a
+              <m.a
                 key={link.id}
                 href={link.url}
                 target="_blank"
@@ -164,7 +173,7 @@ export const AtlasPage: React.FC = () => {
                       {link.title}
                     </span>
                     {link.subtitle && (
-                      <p className="text-[10px] font-mono-custom text-[#69759B] truncate">
+                      <p className="text-[10px] font-mono-custom text-[#707CA3] truncate">
                         {link.subtitle}
                       </p>
                     )}
@@ -174,14 +183,14 @@ export const AtlasPage: React.FC = () => {
                 <div className="pl-2 text-[#566285] group-hover:text-[#DCE2F5] transition-colors shrink-0">
                   <ArrowUpRight className="w-3.5 h-3.5 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </div>
-              </motion.a>
+              </m.a>
             ))}
           </div>
         </section>
 
         {/* 5. ARTIST INTRO */}
         <section className="w-full mt-8 p-5 rounded-2xl bg-[#070A14] border border-[#161B30] text-center">
-          <span className="text-[10px] font-mono-custom tracking-[0.25em] text-[#5C67DE] uppercase font-bold block mb-1">
+          <span className="text-[10px] font-mono-custom tracking-[0.25em] text-[#6B76E8] uppercase font-bold block mb-1">
             ARTIST PROFILE
           </span>
           <h3 className="font-display text-lg font-black text-[#F4F4F8] tracking-wider uppercase">
@@ -190,7 +199,7 @@ export const AtlasPage: React.FC = () => {
           <p className="text-[11px] font-mono-custom text-[#8692B8] uppercase tracking-[0.2em] mt-0.5">
             {ATLAS_PROFILE.role}
           </p>
-          <p className="text-xs text-[#6B779E] mt-3 leading-relaxed max-w-xs mx-auto">
+          <p className="text-xs text-[#707CA3] mt-3 leading-relaxed max-w-xs mx-auto">
             {ATLAS_PROFILE.bio}
           </p>
         </section>
@@ -200,16 +209,20 @@ export const AtlasPage: React.FC = () => {
       </main>
 
       {/* Share / QR Modal */}
-      <ShareModal
-        isOpen={isShareModalOpen}
-        onClose={() => setIsShareModalOpen(false)}
-        onToast={showToast}
-      />
+      {hasOpenedShareModal && (
+        <Suspense fallback={null}>
+          <LazyShareModal
+            isOpen={isShareModalOpen}
+            onClose={() => setIsShareModalOpen(false)}
+            onToast={showToast}
+          />
+        </Suspense>
+      )}
 
       {/* Subtle Toast Feedback */}
       <AnimatePresence>
         {toastMessage && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 16 }}
@@ -217,7 +230,7 @@ export const AtlasPage: React.FC = () => {
           >
             <CheckCircle2 className="w-3.5 h-3.5 text-[#5C67DE]" />
             <span>{toastMessage}</span>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

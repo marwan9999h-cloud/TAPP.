@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'motion/react';
+import { m } from 'motion/react';
 import { SOCIAL_ICONS } from '../data/atlasData';
 import { SocialIconItem } from '../types';
 import { PlatformIcon } from './PlatformIcon';
@@ -13,7 +13,7 @@ export const SocialIcons: React.FC<SocialIconsProps> = ({ onIconClick }) => {
     <section aria-label="Social Channels" className="w-full pt-3 pb-2">
       <div className="flex items-center justify-center gap-3">
         {SOCIAL_ICONS.map((item, index) => (
-          <motion.a
+          <m.a
             key={item.id}
             href={item.url}
             target="_blank"
@@ -34,7 +34,7 @@ export const SocialIcons: React.FC<SocialIconsProps> = ({ onIconClick }) => {
             title={item.label}
           >
             <PlatformIcon platform={item.platform} className="w-4 h-4" />
-          </motion.a>
+          </m.a>
         ))}
       </div>
     </section>

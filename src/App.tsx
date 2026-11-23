@@ -1,26 +1,26 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
+import { LazyMotion, domAnimation } from 'motion/react';
 import { RoutePath, useCurrentRoute } from './router';
-import { BrandSlug, getBrandByPath } from './config/brands';
+import { getBrandByPath } from './config/brands';
 import { BRAND_SEO, HOME_SEO, NOT_FOUND_SEO } from './config/seoRoutes.mjs';
 import { useDocumentMeta, DocumentMetaInput } from './hooks/useDocumentMeta';
-import { HomePage } from './pages/HomePage';
-import { AtlasPage } from './pages/AtlasPage';
-import { SoviPage } from './pages/SoviPage';
-import { ByMarcosPage } from './pages/ByMarcosPage';
-import { GuidePage } from './pages/GuidePage';
-import { NotFoundPage } from './pages/NotFoundPage';
+import { loadPageModule, PageComponentMap } from './routes/routePages';
 
-const BRAND_PAGES: Record<BrandSlug, React.ComponentType> = {
-  atlas: AtlasPage,
-  sovi: SoviPage,
-  bymarcos: ByMarcosPage,
+const LAZY_PAGES: Record<RoutePath, React.LazyExoticComponent<React.ComponentType>> = {
+  '/': lazy(() => loadPageModule('/')),
+  '/guide': lazy(() => loadPageModule('/guide')),
+  '/atlas': lazy(() => loadPageModule('/atlas')),
+  '/sovi': lazy(() => loadPageModule('/sovi')),
+  '/bymarcos': lazy(() => loadPageModule('/bymarcos')),
+  '/not-found': lazy(() => loadPageModule('/not-found')),
 };
 
 interface AppProps {
   initialRoute?: RoutePath;
+  preloadedPages?: PageComponentMap;
 }
 
-export default function App({ initialRoute }: AppProps = {}) {
+export default function App({ initialRoute, preloadedPages }: AppProps = {}) {
   const currentRoute = useCurrentRoute(initialRoute);
   const brandEntry = getBrandByPath(currentRoute);
 
@@ -52,19 +52,18 @@ export default function App({ initialRoute }: AppProps = {}) {
 
   useDocumentMeta(routeMeta);
 
-  if (currentRoute === '/not-found') {
-    return <NotFoundPage />;
-  }
+  const PreloadedPage = preloadedPages?.[currentRoute];
+  const LazyPage = LAZY_PAGES[currentRoute] ?? LAZY_PAGES['/'];
 
-  if (currentRoute === '/guide') {
-    return <GuidePage />;
-  }
-
-  if (brandEntry) {
-    const BrandPage = BRAND_PAGES[brandEntry.slug];
-    return <BrandPage />;
-  }
-
-  // Default route: TAPP Homepage Showcase
-  return <HomePage />;
+  return (
+    <LazyMotion features={domAnimation} strict>
+      {PreloadedPage ? (
+        <PreloadedPage />
+      ) : (
+        <Suspense fallback={<div className="min-h-screen" />}>
+          <LazyPage />
+        </Suspense>
+      )}
+    </LazyMotion>
+  );
 }

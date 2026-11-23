@@ -507,7 +507,7 @@ export const GuidePage: React.FC = () => {
 
           <span
             dir="ltr"
-            className="text-[11px] font-mono-custom tracking-[0.16em] text-[#9E9B95]"
+            className="text-[11px] font-mono-custom tracking-[0.16em] text-[#73706B]"
           >
             {BRAND_FOOTER_CONFIG.attributionText}
           </span>

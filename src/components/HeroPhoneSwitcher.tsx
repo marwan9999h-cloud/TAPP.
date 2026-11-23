@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
+import { m, AnimatePresence, useReducedMotion } from 'motion/react';
 import {
   ArrowLeft,
   ArrowUpRight,
@@ -169,9 +169,9 @@ export const HeroPhoneSwitcher: React.FC = () => {
           className="w-[236px] sm:w-[228px] shrink-0"
         >
           <div className="rounded-[28px] bg-[#141413] p-2 border-[2.5px] border-[#2A2A28] shadow-2xl">
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="wait" initial={false}>
               {activeBrand === 'atlas' && (
-                <motion.div
+                <m.div
                   key="atlas"
                   dir="ltr"
                   initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 6 }}
@@ -182,7 +182,7 @@ export const HeroPhoneSwitcher: React.FC = () => {
                 >
                   <div>
                     {/* Phone Top Bar */}
-                    <div className="flex items-center justify-between pb-2 mb-2.5 border-b border-[#1A203B]/70 text-[8px] font-mono-custom text-[#69759B]">
+                    <div className="flex items-center justify-between pb-2 mb-2.5 border-b border-[#1A203B]/70 text-[8px] font-mono-custom text-[#707CA3]">
                       <span>tapp-link</span>
                       <span className="text-[#CCD4F0]">/atlas</span>
                     </div>
@@ -232,11 +232,11 @@ export const HeroPhoneSwitcher: React.FC = () => {
                     <span dir="rtl">افتح صفحة ATLAS</span>
                     <ArrowUpRight className="w-3 h-3" />
                   </button>
-                </motion.div>
+                </m.div>
               )}
 
               {activeBrand === 'sovi' && (
-                <motion.div
+                <m.div
                   key="sovi"
                   dir="ltr"
                   initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 6 }}
@@ -247,7 +247,7 @@ export const HeroPhoneSwitcher: React.FC = () => {
                 >
                   <div>
                     {/* Top Bar */}
-                    <div className="flex items-center justify-between pb-2 mb-2.5 border-b border-[#E8DFEF] text-[8px] font-mono-custom text-[#8B6D93]">
+                    <div className="flex items-center justify-between pb-2 mb-2.5 border-b border-[#E8DFEF] text-[8px] font-mono-custom text-[#7B5D83]">
                       <span>SOVI OFFICIAL</span>
                       <span>/sovi</span>
                     </div>
@@ -299,11 +299,11 @@ export const HeroPhoneSwitcher: React.FC = () => {
                     <span dir="rtl">افتح صفحة SOVI</span>
                     <ArrowUpRight className="w-3 h-3" />
                   </button>
-                </motion.div>
+                </m.div>
               )}
 
               {activeBrand === 'bymarcos' && (
-                <motion.div
+                <m.div
                   key="bymarcos"
                   dir="ltr"
                   initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 6 }}
@@ -379,7 +379,7 @@ export const HeroPhoneSwitcher: React.FC = () => {
                     <span dir="rtl">افتح صفحة BY MARCOS</span>
                     <ArrowUpRight className="w-3 h-3" />
                   </button>
-                </motion.div>
+                </m.div>
               )}
             </AnimatePresence>
           </div>
