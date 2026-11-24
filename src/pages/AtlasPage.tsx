@@ -1,6 +1,6 @@
-import React, { Suspense, lazy, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { m, AnimatePresence } from 'motion/react';
-import { CheckCircle2, ArrowUpRight, Headphones, Share2 } from 'lucide-react';
+import { CheckCircle2, ArrowUpRight, Headphones, Link2, X } from 'lucide-react';
 import { ProfileHeader } from '../components/ProfileHeader';
 import { SmartPageFooter } from '../components/SmartPageFooter';
 import { PlatformIcon } from '../components/PlatformIcon';
@@ -10,21 +10,64 @@ import {
   SOCIAL_LINKS,
 } from '../data/atlasData';
 import { SmartLink } from '../types';
-
-const LazyShareModal = lazy(() =>
-  import('../components/ShareModal').then((mod) => ({ default: mod.ShareModal }))
-);
+import { getBrandCanonicalUrl } from '../utils/url';
+import { shareBrandPage } from '../utils/share';
 
 export const AtlasPage: React.FC = () => {
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [hasOpenedShareModal, setHasOpenedShareModal] = useState(false);
+  const [isManualCopyOpen, setIsManualCopyOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const manualCopyInputRef = useRef<HTMLInputElement | null>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
+  const canonicalUrl = getBrandCanonicalUrl('atlas');
 
   const showToast = (message: string) => {
     setToastMessage(message);
     setTimeout(() => {
       setToastMessage((current) => (current === message ? null : current));
     }, 2400);
+  };
+
+  useEffect(() => {
+    if (!isManualCopyOpen) return;
+
+    previousFocusRef.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+    const focusTimer = window.setTimeout(() => {
+      manualCopyInputRef.current?.focus();
+      manualCopyInputRef.current?.select();
+    }, 30);
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsManualCopyOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.clearTimeout(focusTimer);
+      window.removeEventListener('keydown', handleKeyDown);
+      previousFocusRef.current?.focus();
+    };
+  }, [isManualCopyOpen]);
+
+  const handleShare = async () => {
+    setIsManualCopyOpen(false);
+    const outcome = await shareBrandPage({
+      title: 'ATLAS — Official Digital Card',
+      text: 'Artist / Rapper / Producer — Listen to ATLAS on Spotify, Anghami & YouTube.',
+      url: canonicalUrl,
+    });
+
+    if (outcome === 'shared') {
+      showToast('PAGE SHARED');
+    } else if (outcome === 'copied') {
+      showToast('LINK COPIED TO CLIPBOARD');
+    } else if (outcome === 'failed' || outcome === 'unavailable') {
+      setIsManualCopyOpen(true);
+    }
   };
 
   const handleLinkClick = (link: SmartLink) => {
@@ -44,12 +87,7 @@ export const AtlasPage: React.FC = () => {
       {/* Main Container: Mobile viewport proportion, centered on desktop */}
       <main className="w-full max-w-[440px] px-4 sm:px-5 py-6 sm:py-8 flex flex-col items-center z-10">
         {/* 1. HERO SECTION */}
-        <ProfileHeader
-          onShareClick={() => {
-            setHasOpenedShareModal(true);
-            setIsShareModalOpen(true);
-          }}
-        />
+        <ProfileHeader onShareClick={handleShare} />
 
         {/* 2. MUSIC SECTION: LISTEN TO ATLAS */}
         <section id="music-section" className="w-full mt-4 scroll-mt-6">
@@ -208,16 +246,66 @@ export const AtlasPage: React.FC = () => {
         <SmartPageFooter />
       </main>
 
-      {/* Share / QR Modal */}
-      {hasOpenedShareModal && (
-        <Suspense fallback={null}>
-          <LazyShareModal
-            isOpen={isShareModalOpen}
-            onClose={() => setIsShareModalOpen(false)}
-            onToast={showToast}
-          />
-        </Suspense>
-      )}
+      {/* Manual Link Copy Fallback (shown only when native share & clipboard copy both fail) */}
+      <AnimatePresence>
+        {isManualCopyOpen && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="atlas-manual-copy-title"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          >
+            <m.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsManualCopyOpen(false)}
+              className="fixed inset-0 bg-black/75 backdrop-blur-xs"
+            />
+            <m.div
+              initial={{ opacity: 0, scale: 0.96, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 8 }}
+              transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
+              className="relative z-10 w-full max-w-sm bg-[#090D1C] border border-[#232D54] rounded-2xl p-5 shadow-2xl text-left"
+            >
+              <button
+                type="button"
+                onClick={() => setIsManualCopyOpen(false)}
+                aria-label="Close manual copy dialog"
+                className="absolute top-3.5 right-3.5 p-1.5 rounded-lg text-[#7E8BAF] hover:text-[#F4F4F8] transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5C67DE]"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              <div className="flex items-center gap-2 text-[#9BA7CF] mb-2">
+                <Link2 className="w-4 h-4 text-[#5C67DE] shrink-0" />
+                <h2
+                  id="atlas-manual-copy-title"
+                  className="text-xs font-mono-custom font-bold tracking-[0.18em] uppercase text-[#F4F4F8]"
+                >
+                  COPY LINK MANUALLY
+                </h2>
+              </div>
+
+              <p className="text-xs text-[#8692B8] leading-relaxed mb-3">
+                Automatic copying is unavailable here. Select and copy the link below:
+              </p>
+
+              <input
+                ref={manualCopyInputRef}
+                type="text"
+                readOnly
+                value={canonicalUrl}
+                aria-label="ATLAS page URL"
+                onFocus={(e) => e.currentTarget.select()}
+                onClick={(e) => e.currentTarget.select()}
+                className="w-full px-3 py-2.5 rounded-lg bg-[#05070E] border border-[#2C3763] text-xs font-mono-custom text-[#F4F4F8] select-all focus:outline-none focus:ring-2 focus:ring-[#5C67DE]"
+              />
+            </m.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Subtle Toast Feedback */}
       <AnimatePresence>

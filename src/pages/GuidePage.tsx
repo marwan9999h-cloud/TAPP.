@@ -124,6 +124,12 @@ const GUIDE_CONTENT: Record<GuideLang, GuideCopy> = {
         answer:
           'أيوة. لأن الكارت والـ QR بيفتحوا رابط صفحة البراند الرقمية، تحديث الروابط أو بيانات التواصل بيتم على الموقع وإعادة النشر على نفس الرابط من غير ما تحتاج تطبع كارت جديد. التعديلات حالياً بتتم عن طريق المطور/الفريق القائم على المشروع ومفيش لوحة تحكم ذاتية داخل الموقع.',
       },
+      {
+        id: 'page-without-card',
+        question: 'أقدر أطلب الصفحة من غير كارت؟',
+        answer:
+          'أيوه. صفحة البراند هي الأساس وبتشتغل لوحدها. الكارت الذكي والستاند إضافة اختيارية بتتفق عليها منفصلة.',
+      },
     ],
     ctaTitle: 'تصفح المنصة أو أمثلة البراندات',
     ctaBody: 'تقدر ترجع للصفحة الرئيسية لـ TAPP أو تجرب صفحات البراندات الفعلية مباشرة.',
@@ -204,6 +210,12 @@ const GUIDE_CONTENT: Record<GuideLang, GuideCopy> = {
         question: 'Can page information be updated?',
         answer:
           'Yes. Because NFC and QR codes point to the live digital brand URL, links and details can be updated and redeployed at that same address without reprinting the physical card. Content updates are currently managed by the developer rather than a self-service dashboard.',
+      },
+      {
+        id: 'page-without-card',
+        question: 'Can I request the page without a card?',
+        answer:
+          'Yes. The brand page is the core product and works on its own. The smart card and stand are optional add-ons arranged separately.',
       },
     ],
     ctaTitle: 'Explore TAPP & Live Brand Pages',

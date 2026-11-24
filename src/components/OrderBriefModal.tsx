@@ -329,6 +329,9 @@ export const OrderBriefModal: React.FC<OrderBriefModalProps> = ({ isOpen, onClos
                     <span>تواصل مباشر</span>
                   </a>
                 </div>
+                <p className="text-[11px] text-[#706E6B] leading-relaxed">
+                  إرسال الملخص بيفتح محادثة واتساب معانا نتفق فيها على التفاصيل، ومش بيعتبر تأكيد طلب نهائي.
+                </p>
               </form>
             )}
           </m.div>

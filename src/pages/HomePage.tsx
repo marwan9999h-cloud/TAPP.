@@ -379,7 +379,7 @@ export const HomePage: React.FC = () => {
           {/* Hero Text Column */}
           <div className="lg:col-span-6 text-center lg:text-right">
             <span className="inline-block text-xs font-semibold text-[#706E6B] mb-4">
-              كارت أعمال ذكي بتقنية NFC + QR
+              صفحة براند ذكية مع خيار كارت NFC + QR
             </span>
 
             <h1 className="text-4xl sm:text-5xl lg:text-[52px] font-black text-[#121211] tracking-tight leading-[1.2] lg:leading-[1.16] text-balance">
@@ -393,7 +393,7 @@ export const HomePage: React.FC = () => {
             </h1>
 
             <p className="mt-5 text-base sm:text-lg text-[#555552] leading-relaxed max-w-xl mx-auto lg:mx-0">
-              كارت فيزيائي يوصّل عملاءك فوراً بصفحة براندك الرقمية — روابطك، حساباتك، وطرق التواصل معاك في مكان واحد بدون أي تطبيق.
+              صفحة براندك الرقمية تجمع روابطك، حساباتك، وطرق التواصل معاك في مكان واحد بدون أي تطبيق — وتقدر تربطها بكارت فيزيائي أو ستاند اختياري.
             </p>
 
             {/* Primary & Secondary CTAs */}
@@ -414,6 +414,10 @@ export const HomePage: React.FC = () => {
                 شوف الأمثلة
               </button>
             </div>
+
+            <p className="mt-4 text-xs text-[#666460] leading-relaxed max-w-xl mx-auto lg:mx-0">
+              صفحة البراند بتاعتك هي المنتج الأساسي: لينك واحد بيفتح صفحة فيها أزرار التواصل والمشاركة. الكارت الذكي (NFC) والستاند (QR) إضافة اختيارية، بتتفق عليها لوحدها لو حبيت.
+            </p>
 
             {/* Clean Trust Points */}
             <div className="mt-7 flex flex-wrap items-center justify-center lg:justify-start gap-x-4 gap-y-2 text-xs text-[#666460]">
